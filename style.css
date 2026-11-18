@@ -26,13 +26,13 @@ body::after {
 body::before {
   width: 500px; height: 500px;
   top: -100px; left: -100px;
-  background: rgba(0, 255, 200, 0.10);
+  background: rgba(0, 255, 200, 0.15);
 }
 /* Lime glow — bottom right */
 body::after {
   width: 400px; height: 400px;
   bottom: -50px; right: -50px;
-  background: rgba(180, 255, 0, 0.07);
+  background: rgba(179, 255, 0, 0.201);
 }
 
 /* Extra aqua glow — centre-right (via main::before) */
@@ -42,7 +42,7 @@ main::before {
   width: 450px; height: 450px;
   top: 40%; right: -80px;
   border-radius: 50%;
-  background: rgba(0, 220, 255, 0.06);
+  background: rgba(0, 221, 255, 0.1);
   filter: blur(140px);
   pointer-events: none;
   z-index: 0;
@@ -81,6 +81,11 @@ h1 {
 @keyframes gradientShift {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
+}
+
+/* Skip the endless title animation for people who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  h1 { animation: none; }
 }
 
 header.title-card p {
@@ -131,6 +136,14 @@ h2 {
   margin-bottom: 12px;
 }
 
+/* Prev / month label / Next */
+.month-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+#monthLabel { min-width: 150px; }
+
 .head-actions {
   display: flex;
   gap: 10px;
@@ -138,7 +151,7 @@ h2 {
   flex-wrap: wrap;
 }
 
-/* ========== ADD & RENAME BUTTONS ========== */
+/* ========== ADD, RENAME & DELETE BUTTONS ========== */
 form { display: flex; gap: 8px; }
 
 #habitInput {
@@ -156,12 +169,15 @@ form { display: flex; gap: 8px; }
   box-shadow: 0 0 10px rgba(0, 255, 200, 0.15);
 }
 
+/* Add button now shows the word "Add", so it sizes to its text */
 .add {
-  width: 36px; height: 36px;
+  height: 36px;
+  padding: 0 18px;
   border: 0; border-radius: 10px;
   background: linear-gradient(135deg, #00ffc8, #b4ff00);
   color: #111;
-  font-size: 20px; font-weight: 700;
+  font: inherit;
+  font-size: 14px; font-weight: 700;
   cursor: pointer;
   transition: box-shadow 0.3s;
 }
@@ -169,6 +185,7 @@ form { display: flex; gap: 8px; }
   box-shadow: 0 0 15px rgba(0, 255, 200, 0.4);
 }
 
+/* Rename and Delete share the same look */
 .rename-btn {
   padding: 8px 14px;
   border: 1px solid rgba(0, 255, 200, 0.25);
@@ -254,17 +271,6 @@ form { display: flex; gap: 8px; }
   font-size: 13px;
   letter-spacing: 0.3px;
 }
-
-.x {
-  border: 0;
-  background: none;
-  color: rgba(255, 255, 255, 0.2);
-  font-size: 12px;
-  cursor: pointer;
-  transition: color 0.2s;
-  margin-left: 4px;
-}
-.x:hover { color: #ff6b6b; }
 
 /* Checkbox: dark when empty, habit colour when ticked */
 .check {
@@ -403,6 +409,128 @@ form { display: flex; gap: 8px; }
 }
 .go-btn:hover {
   box-shadow: 0 0 18px rgba(0, 255, 200, 0.4);
+}
+
+/* ========== DAILY TO-DO LIST ========== */
+.todo-card {
+  margin-top: 20px;
+}
+
+.todo-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  justify-content: center;
+}
+
+.todo-form input {
+  flex: 1;
+  max-width: 400px;
+  padding: 8px 12px;
+  border: 1px solid rgba(0, 255, 200, 0.2);
+  border-radius: 10px;
+  font: inherit;
+  outline: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: #e0e0e0;
+  transition: border-color 0.3s;
+}
+.todo-form input:focus {
+  border-color: #00ffc8;
+  box-shadow: 0 0 10px rgba(0, 255, 200, 0.15);
+}
+
+.todo-list {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.2s;
+}
+.todo-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* To-do checkbox reuses the habit checkbox look */
+.todo-check {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px; height: 20px;
+  min-width: 20px;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 1.5px solid color-mix(in srgb, var(--tc) 40%, #333);
+  background: rgba(255, 255, 255, 0.03);
+  transition: all 0.2s;
+}
+.todo-check:checked {
+  border-color: var(--tc);
+  background: var(--tc) center / 75% no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23111' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+  box-shadow: 0 0 8px color-mix(in srgb, var(--tc) 35%, transparent);
+}
+
+.todo-text {
+  flex: 1;
+  font-size: 14px;
+  color: #e0e0e0;
+  word-break: break-word;
+}
+.todo-text.done {
+  text-decoration: line-through;
+  opacity: 0.4;
+}
+
+.todo-delete {
+  border: 0;
+  background: none;
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+.todo-delete:hover {
+  color: #ff6b6b;
+  background: rgba(255, 100, 100, 0.1);
+}
+
+/* Progress bar at bottom */
+.todo-progress {
+  margin-top: 14px;
+  text-align: center;
+}
+
+.todo-progress-info {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 8px;
+}
+
+.todo-bar-track {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.todo-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #00ffc8, #b4ff00);
+  transition: width 0.4s ease;
+  box-shadow: 0 0 10px rgba(0, 255, 200, 0.3);
 }
 
 /* ========== FOOTER – GitHub Button ========== */

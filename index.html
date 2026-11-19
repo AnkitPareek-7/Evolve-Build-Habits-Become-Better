@@ -8,9 +8,22 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2300ffc8'/%3E%3Cstop offset='1' stop-color='%23b4ff00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0a'/%3E%3Ctext x='16' y='23' font-family='Arial,sans-serif' font-size='20' font-weight='900' text-anchor='middle' fill='url(%23g)'%3EE%3C/text%3E%3C/svg%3E" />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <!-- Apply the saved theme before the page is drawn, so there is no flash of the wrong theme -->
+  <script>
+    try {
+      var savedTheme = localStorage.getItem('evolve.theme');
+      if (savedTheme && /^[a-z-]+$/.test(savedTheme)) document.documentElement.setAttribute('data-theme', savedTheme);
+    } catch (e) { /* storage blocked: the Default theme is used */ }
+  </script>
 </head>
 <body>
   <main>
+    <!-- Theme picker -->
+    <div class="theme-bar">
+      <span id="themeLabel">Theme</span>
+      <div class="theme-switch" id="themeSwitch" role="radiogroup" aria-labelledby="themeLabel"></div>
+    </div>
+
     <!-- Title Card -->
     <header class="card title-card">
       <h1>EVOLVE</h1>
@@ -66,6 +79,11 @@
     <!-- Daily To-Do List -->
     <section class="card todo-card">
       <h2>Daily To-Do List</h2>
+      <div class="todo-nav">
+        <button class="rename-btn" id="todoPrevBtn" title="Previous day">Prev</button>
+        <span id="todoDateLabel" class="todo-date"></span>
+        <button class="rename-btn" id="todoNextBtn" title="Next day">Next</button>
+      </div>
       <form id="todoForm" class="todo-form">
         <input id="todoInput" placeholder="Add a task…" maxlength="50" aria-label="New task" required />
         <button class="add" title="Add task" aria-label="Add task">Add</button>

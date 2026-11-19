@@ -2,7 +2,6 @@
 
 A clean, no-sign-up habit tracker that lives right in your browser.
 
-**🔗 [Open](https://ankitpareek-7.github.io/Evolve-Track-Your-Journey-To-Better-Self-Habit-Tracker/)**
 
 
 

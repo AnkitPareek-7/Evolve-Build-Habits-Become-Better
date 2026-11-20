@@ -1,10 +1,11 @@
-/* EVOLVE – dark Aqua & Lime gradient (Default) plus a Light theme, switched with the Theme dropdown.
-   Every colour lives in a variable below. The Default theme is :root, other themes only change variables. */
-
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+/* EVOLVE – dark Aqua & Lime gradient (Default) plus Light and Purple themes, switched with the Theme buttons.
+   Every colour lives in a variable below. The Default theme is :root, other themes only change variables.
+   (Fonts are loaded by the <link> in index.html.) */
 
 /* ========== THEME VARIABLES – DEFAULT (dark) ========== */
 :root {
+  color-scheme: dark;                      /* dark dropdown lists and scrollbars */
+
   /* Page and text */
   --page-bg: #0a0a0a;
   --text: #fefdfd;
@@ -69,7 +70,7 @@
   --item-bg: rgba(255, 255, 255, 0.03);
   --item-border: rgba(255, 255, 255, 0.05);
   --item-bg-hover: rgba(255, 255, 255, 0.06);
-  --delete-idle: rgba(255, 255, 255, 0.2);
+  --delete-idle: rgba(255, 255, 255, 0.5);
   --delete-hover: #ff6b6b;
   --delete-hover-bg: rgba(255, 100, 100, 0.1);
   --track: rgba(255, 255, 255, 0.06);
@@ -84,6 +85,18 @@
   --gh-glow: rgba(0, 255, 200, 0.15);
   --gh-hover-text: #00ffc8;
   --gh-strong: #00ffc8;
+
+  /* Title card fade graphic: glowing core, soft mid tone, ring colour, dark corner */
+  --art-core: rgba(0, 255, 200, 0.34);
+  --art-mid: rgba(0, 150, 140, 0.20);
+  --art-ring: rgba(180, 255, 0, 0.09);
+  --art-dark: rgba(0, 40, 35, 0.45);
+
+  /* Rename / Delete dialog, Undo bar, danger button */
+  --pop-bg: #0e1513;
+  --backdrop: rgba(0, 0, 0, 0.6);
+  --danger-grad: linear-gradient(135deg, #ff6b6b, #ff9a6b);
+  --danger-text: #111;
 
   /* Optional: a theme can define these to change habit name text, checkbox borders, legend dots.
      They are not set here, so the rules below fall back to the habit's own colour. */
@@ -151,9 +164,34 @@ main {
   justify-content: flex-end;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
   margin-bottom: 14px;
   font-size: 13px;
   color: var(--top-text);
+}
+
+/* Small round GitHub link, top left */
+.github-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin-right: auto;                /* pushes the theme picker to the right */
+  border-radius: 50%;
+  border: 1px solid var(--gh-border);
+  background: var(--gh-bg);
+  color: var(--gh-text);
+  transition: all 0.3s;
+}
+.github-icon:hover {
+  background: var(--gh-bg-hover);
+  box-shadow: 0 0 16px var(--gh-glow);
+  color: var(--gh-hover-text);
+}
+.github-icon:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* Segmented switch: one button per theme, a highlighted pill slides to the active one.
@@ -227,24 +265,46 @@ main {
 
 /* ========== TITLE CARD ========== */
 header.title-card {
-  text-align: center;
+  position: relative;
+  isolation: isolate;                /* the graphic (z-index -1) stays behind the text but above the card background */
+  overflow: hidden;                  /* clips the graphic to the rounded corners */
   margin-bottom: 28px;
-  padding: 40px 20px;
+  padding: clamp(40px, 8vw, 68px) 20px;
+  text-align: center;
+}
+
+/* Fade graphic: soft rings around a glowing corner. Every layer fades to transparent,
+   and the mask fades the whole thing out, so the card shows through and the text stays readable. */
+.title-art {
+  --r: clamp(170px, 30vw, 380px);    /* size of the glow, scales with the screen */
+  --at: 92% 120%;                    /* centre of the rings (bottom right, just outside the card) */
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle var(--r) at var(--at), var(--art-core) 0%, var(--art-mid) 45%, transparent 100%),
+    repeating-radial-gradient(circle at var(--at), transparent 0, var(--art-ring) calc(var(--r) / 8), transparent calc(var(--r) / 4)),
+    radial-gradient(circle at 0 0, var(--art-dark), transparent 60%);
+  -webkit-mask-image: radial-gradient(circle calc(var(--r) * 3) at var(--at), #000 0%, rgba(0, 0, 0, 0.6) 55%, transparent 100%);
+  mask-image: radial-gradient(circle calc(var(--r) * 3) at var(--at), #000 0%, rgba(0, 0, 0, 0.6) 55%, transparent 100%);
 }
 
 h1 {
   margin: 0;
+  padding-left: 0.2em;               /* balances the letter-spacing after the last letter, so the title sits centred */
   font-family: "Orbitron", sans-serif;
-  font-weight: 900;
-  font-size: 4.5rem;
-  letter-spacing: 8px;
+  font-weight: 700;
+  font-size: clamp(2.5rem, 9vw, 4.4rem);
+  line-height: 1.1;
+  letter-spacing: 0.2em;
   background: var(--title-grad);
   background-size: 200% 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0 0 30px var(--title-glow));
-  animation: gradientShift 4s ease infinite;
+  filter: drop-shadow(0 0 24px var(--title-glow));
+  animation: gradientShift 6s ease infinite;
 }
 
 @keyframes gradientShift {
@@ -257,14 +317,23 @@ h1 {
   h1 { animation: none; }
 }
 
-header.title-card p {
-  margin: 10px 0 0;
+.title-text p {
+  margin: 0;
   font-family: "Space Grotesk", sans-serif;
-  font-size: 1.1rem;
+  font-size: clamp(0.85rem, 2.6vw, 1.05rem);
   font-weight: 400;
-  color: var(--text-muted);
-  letter-spacing: 2px;
-  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-mid);
+}
+/* Thin divider between the title and the tagline */
+.title-text p::before {
+  content: '';
+  display: block;
+  width: 56px;
+  height: 1px;
+  margin: 16px auto;
+  background: var(--heading-grad);
+  opacity: 0.7;
 }
 
 /* ========== CARD STYLES – Glass + reverse gradient ========== */
@@ -442,6 +511,25 @@ form { display: flex; gap: 8px; }
   font-weight: 600;
   font-size: 13px;
   letter-spacing: 0.3px;
+}
+
+/* Date number with the weekday letter below it */
+#grid th .dn { display: block; }
+#grid th .dw {
+  display: block;
+  margin-top: 1px;
+  font-size: 10px;
+  font-weight: 500;
+  opacity: 0.8;
+}
+/* "5x / week" under the habit name (only for habits that are not every day) */
+#grid .goal {
+  display: block;
+  padding-left: 13px;
+  font-size: 10.5px;
+  line-height: 1.2;
+  color: var(--text-dim);
+  font-weight: 500;
 }
 
 /* Checkbox: dark when empty, habit colour when ticked */
@@ -683,9 +771,10 @@ form { display: flex; gap: 8px; }
   border: 0;
   background: none;
   color: var(--delete-idle);
-  font-size: 14px;
+  font: inherit;
+  font-size: 13px;
   cursor: pointer;
-  padding: 2px 6px;
+  padding: 4px 10px;
   border-radius: 6px;
   transition: all 0.2s;
 }
@@ -721,34 +810,179 @@ form { display: flex; gap: 8px; }
   box-shadow: 0 0 10px var(--fill-glow);
 }
 
-/* ========== FOOTER – GitHub Button ========== */
-.footer {
-  text-align: center;
-  margin-top: 40px;
-  padding: 20px 0;
+/* ========== RENAME / DELETE DIALOG AND UNDO BAR ========== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
-.github-btn {
-  display: inline-flex;
+.dialog {
+  color-scheme: dark;                  /* dark radio buttons and text selection in the dark themes */
+  width: min(420px, calc(100vw - 32px));
+  padding: 0;
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  background: var(--pop-bg);
+  color: var(--text);
+  box-shadow: var(--card-shadow), 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+.dialog::backdrop {
+  background: var(--backdrop, rgba(0, 0, 0, 0.6));
+}
+.dialog [hidden] { display: none !important; }
+:root[data-theme="light"] .dialog { color-scheme: light; }
+
+.dialog-box {
+  display: block;                      /* the global "form" rule makes forms flex rows */
+  padding: 22px;
+}
+.dialog h2 { margin-bottom: 14px; }
+
+.dialog-empty {
+  margin: 0 0 14px;
+  text-align: center;
+  color: var(--text-mid);
+}
+
+.dialog-list {
+  min-width: 0;
+  max-height: 240px;
+  margin: 0 0 14px;
+  padding: 0;
+  border: 0;
+  overflow-y: auto;
+}
+.dialog-row {
+  display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  border-radius: 12px;
-  border: 1px solid var(--gh-border);
-  background: var(--gh-bg);
-  color: var(--gh-text);
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.dialog-row:hover { background: var(--item-bg-hover); }
+.dialog-row:has(input:checked) {
+  background: var(--item-bg);
+  border-color: var(--sbtn-border);
+}
+.dialog-row input {
+  margin: 0;
+  accent-color: var(--accent);
+}
+.dialog-swatch {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  background: var(--c);
+  box-shadow: var(--legend-ring, none);
+}
+.dialog-habit {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dialog-name {
+  display: block;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--text-mid);
+}
+.dialog-name input {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  background: var(--input-bg);
+  color: var(--text-soft);
   font: inherit;
+  outline: none;
+  transition: border-color 0.3s;
+}
+.dialog-name input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px var(--focus-glow);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+/* The Delete button in the dialog */
+.add.danger {
+  background: var(--danger-grad);
+  color: var(--danger-text);
+}
+.add.danger:hover {
+  box-shadow: 0 0 15px color-mix(in srgb, var(--delete-hover) 45%, transparent);
+}
+
+/* Undo bar (bottom centre) */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: calc(100vw - 32px);
+  padding: 8px 8px 8px 18px;
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  background: var(--pop-bg);
+  color: var(--text);
   font-size: 14px;
-  text-decoration: none;
-  transition: all 0.3s;
+  box-shadow: var(--card-shadow), 0 8px 30px rgba(0, 0, 0, 0.35);
+  transform: translateX(-50%);
+  animation: toastIn 0.25s ease;
 }
-.github-btn:hover {
-  background: var(--gh-bg-hover);
-  box-shadow: 0 0 20px var(--gh-glow);
-  color: var(--gh-hover-text);
+.toast[hidden] { display: none; }
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, 12px); }
 }
-.github-btn strong {
-  color: var(--gh-strong);
+#toastText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.toast-undo {
+  flex: none;
+  padding: 6px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--btn-grad);
+  color: var(--btn-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: box-shadow 0.3s;
+}
+.toast-undo:hover { box-shadow: 0 0 12px var(--btn-glow); }
+.toast-undo:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast { animation: none; }
 }
 
 /* =====================================================================
@@ -811,7 +1045,7 @@ form { display: flex; gap: 8px; }
   --item-bg: rgba(144, 224, 239, 0.3);
   --item-border: rgba(0, 119, 182, 0.28);
   --item-bg-hover: rgba(144, 224, 239, 0.6);
-  --delete-idle: rgba(3, 4, 94, 0.5);
+  --delete-idle: rgba(3, 4, 94, 0.7);
   --delete-hover: #03045E;
   --delete-hover-bg: rgba(0, 180, 216, 0.3);
   --track: rgba(0, 119, 182, 0.2);
@@ -826,6 +1060,17 @@ form { display: flex; gap: 8px; }
   --gh-glow: rgba(144, 224, 239, 0.35);
   --gh-hover-text: #90E0EF;
   --gh-strong: #90E0EF;
+
+  --pop-bg: linear-gradient(145deg, #CAF0F8, #90E0EF);
+  --backdrop: rgba(3, 4, 94, 0.5);
+  --danger-grad: linear-gradient(135deg, #0077B6, #03045E);
+  --danger-text: #CAF0F8;
+
+  /* Title card fade graphic: glowing core, soft mid tone, ring colour, dark corner */
+  --art-core: rgba(0, 119, 182, 0.30);
+  --art-mid: rgba(0, 180, 216, 0.22);
+  --art-ring: rgba(0, 119, 182, 0.10);
+  --art-dark: rgba(3, 4, 94, 0.12);
 
   /* Habit names stay dark; checkboxes and legend dots get a dark outline */
   --tag-text: #03045E;
@@ -857,4 +1102,122 @@ form { display: flex; gap: 8px; }
 /* A 0% bar has no height, so it gets no outline (otherwise it draws a heavy line on the chart baseline) */
 :root[data-theme="light"] .bar[style*="height:0%"] {
   box-shadow: none;
+}
+
+/* =====================================================================
+   PURPLE THEME – dark, lavender and pink accents
+   palette: #F3D9FF  #E0AAFF  #C77DFF  #9D4EDD  #FF9EDC
+   ===================================================================== */
+:root[data-theme="purple"] {
+  --page-bg: linear-gradient(180deg, #1a0b2e 0%, #3b1466 50%, #0d0518 100%);
+  --text: #f6ecff;
+  --text-soft: #efe0ff;
+  --text-mid: rgba(246, 236, 255, 0.7);
+  --text-muted: rgba(246, 236, 255, 0.6);
+  --text-dim: rgba(246, 236, 255, 0.5);
+  --top-text: rgba(246, 236, 255, 0.7);
+
+  --glow-1: rgba(199, 125, 255, 0.28);
+  --glow-2: rgba(255, 158, 220, 0.2);
+  --glow-3: rgba(157, 78, 221, 0.28);
+
+  --title-grad: linear-gradient(135deg, #E0AAFF, #FF9EDC, #C77DFF);
+  --title-glow: rgba(199, 125, 255, 0.45);
+  --heading-grad: linear-gradient(90deg, #E0AAFF, #FF9EDC);
+  --card-bg: linear-gradient(145deg, rgba(199, 125, 255, 0.10), rgba(157, 78, 221, 0.07), rgba(13, 5, 24, 0.55));
+  --card-border: rgba(199, 125, 255, 0.22);
+  --card-shadow:
+    0 0 22px rgba(199, 125, 255, 0.08),
+    0 4px 30px rgba(0, 0, 0, 0.45),
+    inset 0 0 40px rgba(199, 125, 255, 0.04);
+
+  --accent: #C77DFF;
+  --accent-text: #E0AAFF;
+
+  --input-bg: rgba(246, 236, 255, 0.06);
+  --input-border: rgba(199, 125, 255, 0.32);
+  --focus-glow: rgba(199, 125, 255, 0.3);
+
+  --btn-grad: linear-gradient(135deg, #C77DFF, #FF9EDC);
+  --btn-text: #1a0b2e;
+  --btn-glow: rgba(199, 125, 255, 0.5);
+
+  --sbtn-bg: rgba(199, 125, 255, 0.12);
+  --sbtn-border: rgba(199, 125, 255, 0.35);
+  --sbtn-text: #E0AAFF;
+  --sbtn-bg-hover: rgba(199, 125, 255, 0.22);
+  --sbtn-glow: rgba(199, 125, 255, 0.3);
+
+  --week-text: rgba(255, 158, 220, 0.75);
+  --line-soft: rgba(246, 236, 255, 0.1);
+  --check-bg: rgba(246, 236, 255, 0.05);
+  /* Two-tone tick (light with a dark edge) so it shows on every palette colour */
+  --tick: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' stroke='%231a0b2e' stroke-width='6.5'/%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' stroke='%23F3D9FF' stroke-width='3'/%3E%3C/svg%3E");
+
+  --line: rgba(246, 236, 255, 0.14);
+  --grid-line: rgba(246, 236, 255, 0.05);
+  --bar-shadow: 0 0 6px rgba(0, 0, 0, 0.35);
+
+  --item-bg: rgba(246, 236, 255, 0.05);
+  --item-border: rgba(199, 125, 255, 0.15);
+  --item-bg-hover: rgba(199, 125, 255, 0.12);
+  --delete-idle: rgba(246, 236, 255, 0.55);
+  --delete-hover: #FF9EDC;
+  --delete-hover-bg: rgba(255, 158, 220, 0.12);
+  --track: rgba(246, 236, 255, 0.09);
+  --fill-grad: linear-gradient(90deg, #C77DFF, #FF9EDC);
+  --fill-glow: rgba(199, 125, 255, 0.4);
+
+  --gh-border: rgba(199, 125, 255, 0.3);
+  --gh-bg: rgba(199, 125, 255, 0.08);
+  --gh-text: #efe0ff;
+  --gh-bg-hover: rgba(199, 125, 255, 0.16);
+  --gh-glow: rgba(199, 125, 255, 0.3);
+  --gh-hover-text: #E0AAFF;
+  --gh-strong: #E0AAFF;
+
+  /* Title card fade graphic: glowing core, soft mid tone, ring colour, dark corner */
+  --art-core: rgba(255, 95, 200, 0.50);
+  --art-mid: rgba(168, 60, 230, 0.36);
+  --art-ring: rgba(199, 125, 255, 0.15);
+  --art-dark: rgba(10, 0, 25, 0.55);
+
+  --pop-bg: #1b0d33;
+  --backdrop: rgba(13, 5, 24, 0.65);
+  --danger-grad: linear-gradient(135deg, #ff6b9d, #ff8a6b);
+  --danger-text: #1a0b2e;
+}
+/* ========== WEEKLY FREQUENCY SELECTS + GITHUB ICON ON THE LIGHT THEME ========== */
+#goalInput,
+.dialog-name select {
+  padding: 8px 10px;
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  background: var(--input-bg);
+  color: var(--text-soft);
+  font: inherit;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+.dialog-name select {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+}
+#goalInput:focus,
+.dialog-name select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px var(--focus-glow);
+}
+:root[data-theme="light"] .tag + .goal { padding-left: 18px; }
+/* The icon now sits on the light top of the page, so it turns dark */
+:root[data-theme="light"] .github-icon {
+  color: #03045E;
+  border-color: rgba(3, 4, 94, 0.5);
+  background: rgba(202, 240, 248, 0.55);
+}
+:root[data-theme="light"] .github-icon:hover {
+  background: #CAF0F8;
+  color: #03045E;
 }

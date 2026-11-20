@@ -1,5 +1,5 @@
 /* EVOLVE – habit tracker
-   A habit is saved as: { id, name, color, start: "YYYY-MM-DD", done: { "YYYY-MM-DD": true } } */
+   A habit is saved as: { id, name, color, goal (times a week, 1-7), start: "YYYY-MM-DD", done: { "YYYY-MM-DD": true } } */
 
 const STORAGE_KEY = 'evolve.v1';
 const TARGET_KEY = 'evolve.target';
@@ -10,12 +10,16 @@ const THEME_KEY = 'evolve.theme';
 // To add a theme: add a line here, a [data-theme] block in style.css and (optionally) a palette below.
 const THEMES = {
   default: { label: 'Default', dot: '#00ffc8' },
-  light: { label: 'Light', dot: '#00B4D8' }
+  light: { label: 'Light', dot: '#00B4D8' },
+  purple: { label: 'Purple', dot: '#C77DFF' }
 };
 
 // A theme listed here colours habits and tasks by position from its own palette (it repeats after the last colour).
 // A theme not listed (Default) keeps each habit's saved colour.
-const THEME_PALETTES = { light: ['#CAF0F8', '#90E0EF', '#00B4D8', '#0077B6', '#03045E'] };
+const THEME_PALETTES = {
+  light: ['#CAF0F8', '#90E0EF', '#00B4D8', '#0077B6', '#03045E'],
+  purple: ['#F3D9FF', '#E0AAFF', '#C77DFF', '#9D4EDD', '#FF9EDC']
+};
 
 // Every habit gets the next unused colour from this list (edit freely)
 const COLORS = ['#00ffc8', '#03e7f7', '#b4ff00', '#62ff00', '#dcf905'];
@@ -32,6 +36,9 @@ const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>'
 const pct = (n, total) => (n / total) * 100;
 const fmt = (v) => +v.toFixed(1) + '%';                 // 71.4285 -> "71.4%"
 const keyOf = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+// Today at midnight (a Date)
+const todayDate = () => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); };
 
 /* ---------- Safe storage ---------- */
 // Reading or writing localStorage can throw (blocked storage, full storage), so every access is wrapped.
@@ -106,8 +113,8 @@ function calendar() {
 const dayKey = (c, day) => `${c.y}-${pad(c.m + 1)}-${pad(day)}`;
 
 /* ---------- Data ---------- */
-function makeHabit(name, color) {
-  return { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name, color, start: keyOf(new Date()), done: {} };
+function makeHabit(name, color, goal = 7) {
+  return { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name, color, goal, start: keyOf(new Date()), done: {} };
 }
 
 // A saved habit list is only used if every habit has the expected fields
@@ -117,9 +124,18 @@ const isHabits = (d) => Array.isArray(d) && d.every(isHabit);
 
 // Default habits renamed to Habit 1, Habit 2, Habit 3
 const defaultHabits = () => ['Habit 1', 'Habit 2', 'Habit 3'].map((name, i) => makeHabit(name, COLORS[i]));
-const loadHabits = () => readJSON(STORAGE_KEY, isHabits, defaultHabits);
+// Times per week a habit should be done: 1 to 7 (7 = every day). Habits saved before this option count as every day.
+const normGoal = (g) => (Number.isInteger(g) && g >= 1 && g <= 7 ? g : 7);
+const goalLabel = (g) => (g === 7 ? 'Every day (regular)' : `${g}\u00d7 a week`);
+const loadHabits = () => readJSON(STORAGE_KEY, isHabits, defaultHabits).map((h) => ({ ...h, goal: normGoal(h.goal) }));
 
 let habits = loadHabits();
+
+// Frequency choices in the Add form and in the Edit dialog
+['goalInput', 'dialogGoal'].forEach((id) => {
+  $(id).innerHTML = [1, 2, 3, 4, 5, 6, 7].map((g) => `<option value="${g}">${goalLabel(g)}</option>`).join('');
+});
+$('goalInput').value = 7;
 
 // The habits as drawn on screen (colour depends on the theme). Saved data is never changed by this.
 const shownHabits = () => habits.map((h, i) => ({ ...h, color: colorFor(h.color, i) }));
@@ -138,6 +154,8 @@ let targetDays = loadTarget();
 $('targetInput').value = targetDays;
 
 /* ---------- Month grid ---------- */
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
 function renderGrid(c) {
   const days = Array.from({ length: c.n }, (_, i) => i + 1);
   const weeks = Math.ceil(c.n / 7);
@@ -154,12 +172,16 @@ function renderGrid(c) {
   html += '</tr>';
 
   // Row 2: day numbers (first cell left empty)
-  html += '<tr><th></th>' + days.map((d) => `<th class="${wstart(d)} ${d === c.today ? 'today' : ''}">${d}</th>`).join('') + '</tr>';
+  html += '<tr><th></th>' + days.map((d) => {
+    const name = DAY_NAMES[new Date(c.y, c.m, d).getDay()];     // real weekday of this date
+    return `<th class="${wstart(d)} ${d === c.today ? 'today' : ''}" title="${name}" aria-label="${name} ${d}">` +
+      `<span class="dn">${d}</span><span class="dw" aria-hidden="true">${name[0]}</span></th>`;
+  }).join('') + '</tr>';
 
   // One row per habit
   html += shownHabits().map((h) =>
     `<tr style="--c:${h.color}">
-       <td class="name"><span class="tag">${esc(h.name)}</span></td>` +
+       <td class="name"><span class="tag">${esc(h.name)}</span>${h.goal < 7 ? `<span class="goal">${h.goal}\u00d7 / week</span>` : ''}</td>` +
     days.map((d) => {
       const key = dayKey(c, d);
       return `<td class="${wstart(d)}"><input type="checkbox" class="check" data-id="${h.id}" data-key="${key}"
@@ -183,25 +205,36 @@ function drawChart(id, groups) {
 
 function renderCharts(c) {
   const hs = shownHabits();
-  const bar = (h, v) => ({ v, c: h.color, t: `${h.name}: ${fmt(v)}` });
+  const bar = (h, v, note) => ({ v, c: h.color, t: note ? `${h.name}: ${note} (${fmt(v)})` : `${h.name}: ${fmt(v)}` });
   const count = (h, from, to) => { let n = 0; for (let d = from; d <= to; d++) if (h.done[dayKey(c, d)]) n++; return n; };
 
-  // Weekly: ticks in the week out of 7 days (days 1-7, 8-14, ...; the last week may be shorter)
-  const weekly = Array.from({ length: Math.ceil(c.n / 7) }, (_, w) => {
-    const from = w * 7 + 1, to = Math.min(from + 6, c.n);
-    return { label: `Week ${w + 1}`, bars: hs.map((h) => bar(h, pct(count(h, from, to), to - from + 1))) };
+  // A week's goal: the habit's times per week; the last week of a month can be shorter, so its goal is prorated (minimum 1)
+  const weekGoal = (h, len) => (len >= 7 ? h.goal : Math.max(1, Math.round((h.goal * len) / 7)));
+  const spans = Array.from({ length: Math.ceil(c.n / 7) }, (_, w) => ({ from: w * 7 + 1, to: Math.min(w * 7 + 7, c.n) }));
+  const stat = (h, s) => ({ t: count(h, s.from, s.to), g: weekGoal(h, s.to - s.from + 1) });
+
+  // Weekly: ticks in the week out of the habit's weekly goal (capped at 100%)
+  const weekly = spans.map((s, w) => ({
+    label: `Week ${w + 1}`,
+    bars: hs.map((h) => { const k = stat(h, s); return bar(h, Math.min(100, pct(k.t, k.g)), `${k.t} of ${k.g}`); })
+  }));
+
+  // Monthly: the capped weekly ticks added up, out of the added-up weekly goals (so it agrees with the weekly graph)
+  const monthly = hs.map((h) => {
+    let got = 0, need = 0;
+    spans.forEach((s) => { const k = stat(h, s); got += Math.min(k.t, k.g); need += k.g; });
+    return { label: h.name, bars: [bar(h, pct(got, need), `${got} of ${need}`)] };
   });
 
-  // Monthly: ticks in the month on screen out of all days in that month (28 to 31)
-  const monthly = hs.map((h) => ({ label: h.name, bars: [bar(h, pct(count(h, 1, c.n), c.n))] }));
-
-  // Consistency: ticks out of the days since the habit was started, up to today
+  // Consistency: ticks out of the ticks expected since the habit was started (goal x days / 7), up to today
   // (or up to the end of the month on screen when that month is in the past)
   const endKey = keyOf(c.end);
   const consistency = hs.map((h) => {
     const daysUsed = Math.round((c.end - new Date(h.start + 'T00:00')) / 864e5) + 1;
     const ticks = Object.keys(h.done).filter((k) => k <= endKey).length;
-    return { label: h.name, bars: [bar(h, daysUsed > 0 ? Math.min(100, pct(ticks, daysUsed)) : 0)] };
+    const expected = (h.goal * daysUsed) / 7;
+    const v = daysUsed > 0 ? Math.min(100, pct(ticks, expected)) : 0;
+    return { label: h.name, bars: [bar(h, v, daysUsed > 0 ? `${ticks} of ${+expected.toFixed(1)}` : '')] };
   });
 
   $('legend').innerHTML = hs.map((h) => `<span><i style="background:${h.color}"></i>${esc(h.name)}</span>`).join('');
@@ -211,17 +244,24 @@ function renderCharts(c) {
 }
 
 /* ---------- Target Streak graph ---------- */
-function renderTargetStreak(c) {
-  const count = (h, from, to) => { let n = 0; for (let d = from; d <= to; d++) if (h.done[dayKey(c, d)]) n++; return n; };
+// Current streak: consecutive ticked days counting back from today, across months.
+// If today is not ticked yet, counting starts from yesterday, so the streak is not lost before the day ends.
+function streakOf(h) {
+  const d = todayDate();
+  if (!h.done[keyOf(d)]) d.setDate(d.getDate() - 1);
+  let n = 0;
+  while (h.done[keyOf(d)]) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
 
-  // Count checked days in the month on screen (only up to today), progress out of targetDays
+// Bar = streak out of the target (capped at 100%). It always shows the streak as of today, whatever month is on screen.
+function renderTargetStreak() {
   const targetData = shownHabits().map((h) => {
-    const totalChecked = count(h, 1, c.t);
-    const progress = pct(totalChecked, targetDays);
-    const cappedProgress = Math.min(progress, 100); // cap at 100%
+    const streak = streakOf(h);
+    const progress = pct(streak, targetDays);
     return {
       label: h.name,
-      bars: [{ v: cappedProgress, c: h.color, t: `${h.name}: ${totalChecked}/${targetDays} days (${fmt(progress)})` }]
+      bars: [{ v: Math.min(progress, 100), c: h.color, t: `${h.name}: ${streak} of ${targetDays} days (${fmt(progress)})` }]
     };
   });
 
@@ -232,7 +272,7 @@ function render() {
   const c = calendar();
   renderGrid(c);
   renderCharts(c);
-  renderTargetStreak(c);
+  renderTargetStreak();
 }
 
 /* ---------- Actions ---------- */
@@ -261,61 +301,118 @@ $('addForm').addEventListener('submit', (e) => {
   const name = $('habitInput').value.trim();
   if (!name) return;
   const color = COLORS.find((c) => !habits.some((h) => h.color === c)) || COLORS[habits.length % COLORS.length];
-  habits.push(makeHabit(name, color));
+  habits.push(makeHabit(name, color, normGoal(parseInt($('goalInput').value, 10))));
   $('habitInput').value = '';
   save();
   render();
 });
 
-// Rename a habit
-$('renameBtn').addEventListener('click', () => {
-  if (habits.length === 0) {
-    alert('No habits to rename.');
-    return;
-  }
+/* ---------- Undo toast ---------- */
+let undoAction = null;
+let toastTimer = null;
 
-  // Build a numbered list for the user to pick from
-  const list = habits.map((h, i) => `${i + 1}. ${h.name}`).join('\n');
-  const choice = prompt(`Which habit do you want to rename?\n\n${list}\n\nEnter the number:`);
-  if (!choice) return;
+function hideToast() {
+  clearTimeout(toastTimer);
+  undoAction = null;
+  $('toast').hidden = true;
+}
 
-  const index = parseInt(choice, 10) - 1;
-  if (isNaN(index) || index < 0 || index >= habits.length) {
-    alert('Invalid selection.');
-    return;
-  }
+// Show "<message> Undo" for 8 seconds. Only the latest action can be undone.
+function showUndo(message, undo) {
+  undoAction = undo;
+  $('toastText').textContent = message;
+  $('toast').hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, 8000);
+}
 
-  const newName = prompt(`Rename "${habits[index].name}" to (max ${NAME_MAX} characters):`, habits[index].name);
-  if (!newName || !newName.trim()) return;
-
-  habits[index].name = newName.trim().slice(0, NAME_MAX).trim();
-  save();
-  render();
+$('toastUndo').addEventListener('click', () => {
+  const undo = undoAction;
+  hideToast();
+  if (undo) undo();
 });
 
-// Delete a habit
-$('deleteBtn').addEventListener('click', () => {
-  if (habits.length === 0) {
-    alert('No habits to delete.');
+/* ---------- Rename / Delete dialog ---------- */
+const dialog = $('habitDialog');
+let dialogMode = 'rename';   // 'rename' or 'delete'
+let dialogPick = 0;          // index of the habit selected in the dialog
+
+function renderDialogList() {
+  $('dialogList').innerHTML = '<legend class="sr-only">Choose a habit</legend>' + shownHabits().map((h, i) =>
+    `<label class="dialog-row">
+       <input type="radio" name="dialogHabit" value="${i}" ${i === dialogPick ? 'checked' : ''}>
+       <span class="dialog-swatch" style="--c:${h.color}"></span>
+       <span class="dialog-habit">${esc(h.name)}</span>
+     </label>`
+  ).join('');
+  $('dialogName').value = habits[dialogPick] ? habits[dialogPick].name : '';
+  $('dialogGoal').value = habits[dialogPick] ? habits[dialogPick].goal : 7;
+}
+
+function openDialog(mode) {
+  dialogMode = mode;
+  dialogPick = 0;
+  const rename = mode === 'rename';
+  const empty = habits.length === 0;
+  $('dialogTitle').textContent = rename ? 'Edit a habit' : 'Delete a habit';
+  $('dialogEmpty').textContent = `No habits to ${rename ? 'edit' : 'delete'}.`;
+  $('dialogEmpty').hidden = !empty;
+  $('dialogList').hidden = empty;
+  $('dialogNameWrap').hidden = empty || !rename;
+  $('dialogGoalWrap').hidden = empty || !rename;
+  $('dialogName').required = rename;
+  $('dialogOk').hidden = empty;
+  $('dialogOk').textContent = rename ? 'Save' : 'Delete';
+  $('dialogOk').classList.toggle('danger', !rename);
+  renderDialogList();
+  dialog.showModal();
+  if (!empty && rename) { $('dialogName').focus(); $('dialogName').select(); }
+}
+
+$('renameBtn').addEventListener('click', () => openDialog('rename'));
+$('deleteBtn').addEventListener('click', () => openDialog('delete'));
+$('dialogCancel').addEventListener('click', () => dialog.close());
+
+// Click on the dimmed area outside the box closes the dialog
+dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+
+// Choosing a habit: the name box follows the choice
+$('dialogList').addEventListener('change', (e) => {
+  dialogPick = parseInt(e.target.value, 10);
+  $('dialogName').value = habits[dialogPick] ? habits[dialogPick].name : '';
+  $('dialogGoal').value = habits[dialogPick] ? habits[dialogPick].goal : 7;
+});
+
+// Enter on a radio button must not submit (it would delete straight away in Delete mode)
+$('dialogList').addEventListener('keydown', (e) => { if (e.key === 'Enter') e.preventDefault(); });
+
+$('dialogForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const index = dialogPick;
+  const habit = habits[index];
+  if (!habit) { dialog.close(); return; }
+
+  if (dialogMode === 'rename') {
+    const name = $('dialogName').value.trim().slice(0, NAME_MAX).trim();
+    if (!name) { $('dialogName').focus(); return; }
+    habit.name = name;
+    habit.goal = normGoal(parseInt($('dialogGoal').value, 10));
+    save();
+    render();
+    dialog.close();
     return;
   }
 
-  // Build a numbered list for the user to pick from
-  const list = habits.map((h, i) => `${i + 1}. ${h.name}`).join('\n');
-  const choice = prompt(`Which habit do you want to delete?\n\n${list}\n\nEnter the number:`);
-  if (!choice) return;
-
-  const index = parseInt(choice, 10) - 1;
-  if (isNaN(index) || index < 0 || index >= habits.length) {
-    alert('Invalid selection.');
-    return;
-  }
-
-  if (!confirm(`Delete "${habits[index].name}"? This cannot be undone.`)) return;
-
+  // Delete: remove now, and offer Undo (the habit comes back in the same place with all its ticks)
   habits.splice(index, 1);
   save();
   render();
+  dialog.close();
+  showUndo(`Deleted "${habit.name}"`, () => {
+    habits.splice(Math.min(index, habits.length), 0, habit);
+    save();
+    render();
+  });
 });
 
 // Target Streak: Go button
@@ -328,7 +425,7 @@ $('targetGoBtn').addEventListener('click', () => {
   targetDays = clampTarget(val);          // anything above 365 becomes 365
   $('targetInput').value = targetDays;
   lsSet(TARGET_KEY, targetDays);
-  renderTargetStreak(calendar());
+  renderTargetStreak();
 });
 
 /* ---------- Daily To-Do List (one list per date) ---------- */
@@ -356,7 +453,6 @@ let todos = loadTodos();
 // Which day's list is on screen: 0 = today, -1 = yesterday ...
 let todoOffset = 0;
 
-const todayDate = () => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); };
 const viewedDate = () => { const t = todayDate(); return new Date(t.getFullYear(), t.getMonth(), t.getDate() + todoOffset); };
 
 const dayTasks = () => todos[keyOf(viewedDate())] || [];
@@ -385,7 +481,7 @@ function renderTodos() {
 
   if (tasks.length === 0) {
     list.innerHTML = '';
-    progress.innerHTML = `<p class="todo-progress-info">${isToday ? 'No tasks yet — add one above!' : 'No tasks on this day.'}</p>`;
+    progress.innerHTML = `<p class="todo-progress-info">${isToday ? 'No tasks yet. Add one above.' : 'No tasks on this day.'}</p>`;
     return;
   }
 
@@ -394,7 +490,7 @@ function renderTodos() {
     `<li class="todo-item" style="--tc:${colorFor(t.color, i)}">
        <input type="checkbox" class="todo-check" data-todo="${t.id}" ${t.done ? 'checked' : ''} aria-label="Mark ${esc(t.text)}">
        <span class="todo-text ${t.done ? 'done' : ''}">${esc(t.text)}</span>
-       <button class="todo-delete" data-remove-todo="${t.id}" title="Remove task">✕</button>
+       <button class="todo-delete" data-remove-todo="${t.id}" aria-label="Remove task: ${esc(t.text)}">Remove</button>
      </li>`
   ).join('');
 
@@ -451,8 +547,20 @@ $('todoList').addEventListener('change', (e) => {
 $('todoList').addEventListener('click', (e) => {
   const id = e.target.dataset.removeTodo;
   if (!id) return;
-  setDayTasks(dayTasks().filter((t) => t.id !== id));
+  const key = keyOf(viewedDate());
+  const tasks = dayTasks();
+  const index = tasks.findIndex((t) => t.id === id);
+  if (index < 0) return;
+  const removed = tasks[index];
+  setDayTasks(tasks.filter((t) => t.id !== id));
   renderTodos();
+  showUndo(`Removed task "${removed.text}"`, () => {
+    const list = (todos[key] || []).slice();
+    list.splice(Math.min(index, list.length), 0, removed);
+    todos[key] = list;
+    saveTodos();
+    renderTodos();
+  });
 });
 
 /* ---------- Midnight rollover (one timer for the habit grid and the to-do list) ---------- */
@@ -521,6 +629,8 @@ window.addEventListener('storage', (e) => {
   todos = loadTodos();
   theme = loadTheme();
   $('targetInput').value = targetDays;
+  hideToast();
+  if (dialog.open) dialog.close();
   applyTheme();
   render();
   renderTodos();

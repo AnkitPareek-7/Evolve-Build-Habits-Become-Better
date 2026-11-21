@@ -6,40 +6,54 @@
   <meta name="description" content="Evolve is a simple habit tracker with a monthly grid, progress charts and target streaks." />
   <title>Evolve</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2300ffc8'/%3E%3Cstop offset='1' stop-color='%23b4ff00'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0a'/%3E%3Ctext x='16' y='23' font-family='Arial,sans-serif' font-size='20' font-weight='900' text-anchor='middle' fill='url(%23g)'%3EE%3C/text%3E%3C/svg%3E" />
-  <!-- Fonts: one request for both families (Orbitron for the title, Space Grotesk for everything else) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
-  <!-- Apply the saved theme before the page is drawn, so there is no flash of the wrong theme -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="src/styles/themes.css" />
+  <link rel="stylesheet" href="src/styles/base.css" />
+  <link rel="stylesheet" href="src/styles/components.css" />
   <script>
     try {
-      var savedTheme = localStorage.getItem('evolve.theme');
-      if (savedTheme && /^[a-z-]+$/.test(savedTheme)) document.documentElement.setAttribute('data-theme', savedTheme);
-    } catch (e) { /* storage blocked: the Default theme is used */ }
+      var t = localStorage.getItem('evolve.theme');
+      if (t === 'light') t = 'azura';
+      if (t === 'azura' || t === 'galaxia') document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
   </script>
 </head>
 <body>
   <main>
-    <!-- Theme picker -->
-    <div class="theme-bar">
+    <div class="top-bar">
       <a class="github-icon" href="https://github.com/AnkitPareek-7" target="_blank" rel="noopener" title="Follow AnkitPareek on GitHub" aria-label="Follow AnkitPareek on GitHub">
         <svg height="20" width="20" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
       </a>
-      <span id="themeLabel">Theme</span>
-      <div class="theme-switch" id="themeSwitch" role="radiogroup" aria-labelledby="themeLabel"></div>
+      <div class="theme-ctrl">
+        <span id="themeLabel">Theme</span>
+        <div class="theme-switch" id="themeSwitch" role="radiogroup" aria-labelledby="themeLabel"></div>
+      </div>
     </div>
 
-    <!-- Title Card -->
     <header class="card title-card">
       <div class="title-art" aria-hidden="true"></div>
-      <div class="title-text">
-        <h1>EVOLVE</h1>
-        <p>Track Your Journey to a Better Self</p>
-      </div>
+      <h1>EVOLVE</h1>
+      <p class="title-sub">Build Habits. Become Better.</p>
+      <p class="title-tag">Track Your Journey to a Better Self.</p>
     </header>
 
-    <!-- Month grid: one row per habit, one checkbox per day -->
+    <section class="card todo-card">
+      <h2>Daily To-Do List</h2>
+      <div class="todo-nav">
+        <button class="rename-btn" id="todoPrevBtn" title="Previous day">Prev</button>
+        <span id="todoDateLabel" class="todo-date"></span>
+        <button class="rename-btn" id="todoNextBtn" title="Next day">Next</button>
+      </div>
+      <form id="todoForm" class="todo-form">
+        <input id="todoInput" placeholder="Add a task…" maxlength="50" aria-label="New task" required />
+        <button class="add" title="Add task" aria-label="Add task">Add</button>
+      </form>
+      <ul id="todoList" class="todo-list"></ul>
+      <div id="todoProgress" class="todo-progress"></div>
+    </section>
+
     <section class="card">
       <div class="card-head">
         <div class="month-nav">
@@ -60,11 +74,14 @@
       <div class="scroll"><table id="grid"></table></div>
     </section>
 
-    <!-- Graphs -->
     <section class="charts">
-      <div class="card wide">
+      <div class="card">
         <h2>Weekly Progress</h2>
-        <div id="legend" class="legend"></div>
+        <div class="week-nav">
+          <button class="rename-btn arrow-btn" id="weekPrevBtn" title="Previous week" aria-label="Previous week">&larr;</button>
+          <span id="weekLabel" class="week-label"></span>
+          <button class="rename-btn arrow-btn" id="weekNextBtn" title="Next week" aria-label="Next week">&rarr;</button>
+        </div>
         <div id="weekly" class="chart"></div>
       </div>
       <div class="card">
@@ -85,26 +102,8 @@
         <div id="targetStreak" class="chart"></div>
       </div>
     </section>
-
-    <!-- Daily To-Do List -->
-    <section class="card todo-card">
-      <h2>Daily To-Do List</h2>
-      <div class="todo-nav">
-        <button class="rename-btn" id="todoPrevBtn" title="Previous day">Prev</button>
-        <span id="todoDateLabel" class="todo-date"></span>
-        <button class="rename-btn" id="todoNextBtn" title="Next day">Next</button>
-      </div>
-      <form id="todoForm" class="todo-form">
-        <input id="todoInput" placeholder="Add a task…" maxlength="50" aria-label="New task" required />
-        <button class="add" title="Add task" aria-label="Add task">Add</button>
-      </form>
-      <ul id="todoList" class="todo-list"></ul>
-      <div id="todoProgress" class="todo-progress"></div>
-    </section>
-
   </main>
 
-  <!-- Rename / Delete dialog (opened by the Rename and Delete buttons) -->
   <dialog id="habitDialog" class="dialog" aria-labelledby="dialogTitle">
     <form id="dialogForm" class="dialog-box">
       <h2 id="dialogTitle"></h2>
@@ -125,12 +124,11 @@
     </form>
   </dialog>
 
-  <!-- Undo bar shown after deleting a habit or removing a task -->
   <div id="toast" class="toast" role="status" aria-live="polite" hidden>
     <span id="toastText"></span>
     <button type="button" class="toast-undo" id="toastUndo">Undo</button>
   </div>
 
-  <script src="script.js"></script>
+  <script type="module" src="src/js/main.js"></script>
 </body>
 </html>

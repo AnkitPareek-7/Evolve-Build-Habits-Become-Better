@@ -2,7 +2,7 @@
 
 Evolve is a simple habit tracker that runs right in your browser. Tick off your habits each day, plan your to-dos, and watch your progress grow in colourful charts.
 
-**Live demo:** https://ankitpareek-7.github.io/Evolve-Track-Your-Journey-To-Better-Self-Habit-Tracker/
+**Live demo:** https://ankitpareek-7.github.io/Evolve-Build-Habits-Become-Better/
 
 No sign-up, no install, no server. Open the link and start tracking.
 

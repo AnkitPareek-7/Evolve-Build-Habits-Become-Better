@@ -1,0 +1,320 @@
+/* Zestia (default dark), Azura (light) & Galaxia (Milky Way cosmic) themes */
+
+:root {
+  color-scheme: dark;
+
+  --page-bg: #0a0a0a;
+  --text: #fefdfd;
+  --text-soft: #e0e0e0;
+  --text-mid: rgba(255, 255, 255, 0.6);
+  --text-muted: rgba(255, 255, 255, 0.5);
+  --text-dim: rgba(255, 255, 255, 0.4);
+  --top-text: rgba(255, 255, 255, 0.5);
+
+  --glow-1: rgba(0, 255, 200, 0.15);
+  --glow-2: rgba(179, 255, 0, 0.201);
+  --glow-3: rgba(0, 221, 255, 0.1);
+
+  --title-grad: linear-gradient(135deg, #00ffc8, #b4ff00, #00ffc8);
+  --title-glow: rgba(0, 255, 200, 0.25);
+  --title-sub-color: #7effdb;
+  --title-tag-color: rgba(180, 255, 0, 0.8);
+
+  --art-core: rgba(0, 255, 200, 0.34);
+  --art-mid: rgba(180, 255, 0, 0.16);
+  --art-ring-1: rgba(0, 255, 200, 0.14);
+  --art-ring-2: rgba(180, 255, 0, 0.08);
+  --art-dark: rgba(0, 38, 32, 0.42);
+
+  --heading-grad: linear-gradient(90deg, #00ffc8, #b4ff00);
+  --card-bg: linear-gradient(145deg, rgba(180, 255, 0, 0.06), rgba(0, 255, 200, 0.04), rgba(0, 0, 0, 0.5));
+  --card-border: rgba(0, 255, 200, 0.12);
+  --card-shadow: 0 0 20px rgba(0, 255, 200, 0.05), 0 4px 30px rgba(0, 0, 0, 0.4), inset 0 0 40px rgba(0, 255, 200, 0.02);
+  --edge-glow: radial-gradient(92% 20px at 50% 100%, rgba(0, 255, 200, 0.42) 0%, rgba(180, 255, 0, 0.22) 48%, rgba(0, 255, 200, 0.06) 78%, transparent 100%);
+  --edge-shadow: rgba(0, 255, 200, 0.22);
+
+  --accent: #00ffc8;
+  --accent-text: #00ffc8;
+  --spark-2: #00ffc8;
+  --flash-tint: rgba(255, 255, 255, 0.55);
+
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --input-border: rgba(0, 255, 200, 0.2);
+  --focus-glow: rgba(0, 255, 200, 0.15);
+
+  --btn-grad: linear-gradient(135deg, #00ffc8, #b4ff00);
+  --btn-text: #111;
+  --btn-glow: rgba(0, 255, 200, 0.4);
+
+  --sbtn-bg: rgba(0, 255, 200, 0.08);
+  --sbtn-border: rgba(0, 255, 200, 0.25);
+  --sbtn-text: #00ffc8;
+  --sbtn-bg-hover: rgba(0, 255, 200, 0.15);
+  --sbtn-glow: rgba(0, 255, 200, 0.2);
+
+  --week-text: rgba(180, 255, 0, 0.6);
+  --line-soft: rgba(255, 255, 255, 0.06);
+  --check-bg: rgba(255, 255, 255, 0.03);
+  --tick: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23111' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+
+  --line: rgba(255, 255, 255, 0.08);
+  --grid-line: rgba(255, 255, 255, 0.03);
+  --bar-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+
+  --item-bg: rgba(255, 255, 255, 0.03);
+  --item-border: rgba(255, 255, 255, 0.05);
+  --item-bg-hover: rgba(255, 255, 255, 0.06);
+  --delete-idle: rgba(255, 255, 255, 0.5);
+  --delete-hover: #ff6b6b;
+  --delete-hover-bg: rgba(255, 100, 100, 0.1);
+  --track: rgba(255, 255, 255, 0.06);
+  --fill-grad: linear-gradient(90deg, #00ffc8, #b4ff00);
+  --fill-glow: rgba(0, 255, 200, 0.3);
+
+  --gh-border: rgba(0, 255, 200, 0.2);
+  --gh-bg: rgba(0, 255, 200, 0.06);
+  --gh-text: #e0e0e0;
+  --gh-bg-hover: rgba(0, 255, 200, 0.12);
+  --gh-glow: rgba(0, 255, 200, 0.15);
+  --gh-hover-text: #00ffc8;
+
+  --pop-bg: #0e1513;
+  --backdrop: rgba(0, 0, 0, 0.6);
+  --danger-grad: linear-gradient(135deg, #ff6b6b, #ff9a6b);
+  --danger-text: #111;
+}
+
+/* Azura Theme */
+:root[data-theme="azura"] {
+  color-scheme: light;
+
+  --page-bg: linear-gradient(180deg, #00B4D8 0%, #0077B6 50%, #03045E 100%);
+  --text: #03045E;
+  --text-soft: #03045E;
+  --text-mid: rgba(3, 4, 94, 0.85);
+  --text-muted: rgba(3, 4, 94, 0.78);
+  --text-dim: rgba(3, 4, 94, 0.68);
+  --top-text: #03045E;
+
+  --glow-1: rgba(202, 240, 248, 0.55);
+  --glow-2: rgba(144, 224, 239, 0.45);
+  --glow-3: rgba(144, 224, 239, 0.35);
+
+  --title-grad: linear-gradient(135deg, #03045E, #0077B6, #00B4D8, #03045E);
+  --title-glow: rgba(202, 240, 248, 0.65);
+  --title-sub-color: #0077B6;
+  --title-tag-color: #02588c;
+
+  --art-core: rgba(202, 240, 248, 0.55);
+  --art-mid: rgba(0, 180, 216, 0.25);
+  --art-ring-1: rgba(0, 119, 182, 0.18);
+  --art-ring-2: rgba(144, 224, 239, 0.22);
+  --art-dark: rgba(3, 4, 94, 0.12);
+
+  --heading-grad: linear-gradient(90deg, #0077B6, #03045E);
+  --card-bg: linear-gradient(145deg, rgba(202, 240, 248, 0.52), rgba(144, 224, 239, 0.36));
+  --card-border: rgba(202, 240, 248, 0.72);
+  --card-shadow: 0 0 28px rgba(144, 224, 239, 0.45), 0 8px 32px rgba(3, 4, 94, 0.22), inset 0 0 24px rgba(255, 255, 255, 0.28);
+  --edge-glow: radial-gradient(92% 20px at 50% 100%, rgba(202, 240, 248, 0.62) 0%, rgba(144, 224, 239, 0.42) 48%, rgba(0, 180, 216, 0.14) 78%, transparent 100%);
+  --edge-shadow: rgba(144, 224, 239, 0.35);
+
+  --accent: #0077B6;
+  --accent-text: #03045E;
+  --spark-2: #0077B6;
+  --flash-tint: rgba(255, 255, 255, 0.7);
+
+  --input-bg: rgba(202, 240, 248, 0.35);
+  --input-border: rgba(0, 119, 182, 0.45);
+  --focus-glow: rgba(0, 180, 216, 0.4);
+
+  --btn-grad: linear-gradient(135deg, #90E0EF, #00B4D8);
+  --btn-text: #03045E;
+  --btn-glow: rgba(0, 119, 182, 0.4);
+
+  --sbtn-bg: rgba(202, 240, 248, 0.32);
+  --sbtn-border: rgba(0, 119, 182, 0.55);
+  --sbtn-text: #03045E;
+  --sbtn-bg-hover: #90E0EF;
+  --sbtn-glow: rgba(0, 119, 182, 0.25);
+
+  --week-text: #03045E;
+  --line-soft: rgba(3, 4, 94, 0.14);
+  --check-bg: rgba(202, 240, 248, 0.45);
+  --tick: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' stroke='%2303045E' stroke-width='6.5'/%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' stroke='%23CAF0F8' stroke-width='3'/%3E%3C/svg%3E");
+
+  --line: rgba(3, 4, 94, 0.3);
+  --grid-line: rgba(3, 4, 94, 0.09);
+  --bar-shadow: 0 0 0 1.5px #03045E;
+
+  --item-bg: rgba(202, 240, 248, 0.35);
+  --item-border: rgba(0, 119, 182, 0.28);
+  --item-bg-hover: rgba(144, 224, 239, 0.58);
+  --delete-idle: rgba(3, 4, 94, 0.7);
+  --delete-hover: #03045E;
+  --delete-hover-bg: rgba(0, 180, 216, 0.3);
+  --track: rgba(0, 119, 182, 0.2);
+  --fill-grad: linear-gradient(90deg, #00B4D8, #0077B6);
+  --fill-glow: rgba(0, 180, 216, 0.4);
+
+  --gh-border: rgba(3, 4, 94, 0.5);
+  --gh-bg: rgba(202, 240, 248, 0.55);
+  --gh-text: #03045E;
+  --gh-bg-hover: #CAF0F8;
+  --gh-glow: rgba(202, 240, 248, 0.65);
+  --gh-hover-text: #03045E;
+
+  --pop-bg: linear-gradient(145deg, #CAF0F8, #90E0EF);
+  --backdrop: rgba(3, 4, 94, 0.5);
+  --danger-grad: linear-gradient(135deg, #0077B6, #03045E);
+  --danger-text: #CAF0F8;
+
+  --tag-text: #03045E;
+  --check-border: #0077B6;
+  --check-on-border: #03045E;
+  --check-on-shadow: none;
+  --legend-ring: 0 0 0 1px #03045E;
+}
+
+:root[data-theme="azura"] .tag { position: relative; border-left: 0; padding-left: 18px; }
+:root[data-theme="azura"] .tag::before {
+  content: '';
+  position: absolute; left: 2px; top: 50%;
+  width: 8px; height: 14px; margin-top: -7px;
+  border-radius: 3px; background: var(--c);
+  box-shadow: 0 0 0 1.5px #03045E;
+}
+:root[data-theme="azura"] .tag + .goal { padding-left: 18px; }
+:root[data-theme="azura"] .bar[data-zero="true"] { box-shadow: none; }
+
+/* Galaxia Theme (Milky Way cosmic rose, violet & deep indigo) */
+:root[data-theme="galaxia"] {
+  --page-bg: linear-gradient(135deg, #32162d 0%, #24123f 35%, #120d2d 68%, #060614 100%);
+  --text: #fbf4ff;
+  --text-soft: #f2e2ff;
+  --text-mid: rgba(245, 224, 255, 0.72);
+  --text-muted: rgba(240, 214, 255, 0.62);
+  --text-dim: rgba(232, 198, 255, 0.52);
+  --top-text: rgba(248, 224, 255, 0.75);
+
+  --glow-1: rgba(243, 166, 184, 0.26);
+  --glow-2: rgba(123, 74, 210, 0.30);
+  --glow-3: rgba(196, 113, 237, 0.22);
+
+  --title-grad: linear-gradient(135deg, #ffe2c6, #f3a6b8, #c471ed, #8b5cf6);
+  --title-glow: rgba(243, 166, 184, 0.42);
+  --title-sub-color: #f6c2d6;
+  --title-tag-color: rgba(214, 180, 255, 0.88);
+
+  --art-core: rgba(255, 216, 192, 0.34);
+  --art-mid: rgba(196, 113, 237, 0.22);
+  --art-ring-1: rgba(243, 166, 184, 0.14);
+  --art-ring-2: rgba(139, 92, 246, 0.12);
+  --art-dark: rgba(10, 7, 30, 0.55);
+
+  --heading-grad: linear-gradient(90deg, #ffe2c6, #f3a6b8, #c471ed);
+  --card-bg: linear-gradient(145deg, rgba(243, 166, 184, 0.09), rgba(112, 62, 188, 0.16), rgba(8, 7, 24, 0.68));
+  --card-border: rgba(235, 186, 255, 0.22);
+  --card-shadow: 0 0 26px rgba(196, 113, 237, 0.14), 0 8px 34px rgba(4, 3, 16, 0.55), inset 0 0 28px rgba(255, 226, 198, 0.05);
+  --edge-glow: radial-gradient(92% 20px at 50% 100%, rgba(255, 226, 198, 0.55) 0%, rgba(243, 166, 184, 0.42) 38%, rgba(196, 113, 237, 0.24) 72%, transparent 100%);
+  --edge-shadow: rgba(224, 146, 235, 0.34);
+
+  --accent: #e091ec;
+  --accent-text: #f6c2d6;
+  --spark-2: #ffe2c6;
+  --flash-tint: rgba(255, 238, 224, 0.72);
+
+  --input-bg: rgba(246, 224, 255, 0.07);
+  --input-border: rgba(224, 145, 236, 0.34);
+  --focus-glow: rgba(224, 145, 236, 0.28);
+
+  --btn-grad: linear-gradient(135deg, #ffe2c6, #f3a6b8, #c471ed);
+  --btn-text: #160928;
+  --btn-glow: rgba(243, 166, 184, 0.45);
+
+  --sbtn-bg: rgba(196, 113, 237, 0.13);
+  --sbtn-border: rgba(224, 145, 236, 0.36);
+  --sbtn-text: #f3c4e8;
+  --sbtn-bg-hover: rgba(243, 166, 184, 0.22);
+  --sbtn-glow: rgba(224, 145, 236, 0.3);
+
+  --week-text: rgba(255, 226, 198, 0.78);
+  --line-soft: rgba(245, 224, 255, 0.1);
+  --check-bg: rgba(245, 224, 255, 0.05);
+  --tick: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' stroke='%23160928' stroke-width='6.2'/%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5' stroke='%23fff4ea' stroke-width='2.8'/%3E%3C/svg%3E");
+
+  --line: rgba(245, 224, 255, 0.14);
+  --grid-line: rgba(245, 224, 255, 0.05);
+  --bar-shadow: 0 0 10px rgba(196, 113, 237, 0.22);
+
+  --item-bg: rgba(245, 224, 255, 0.05);
+  --item-border: rgba(224, 145, 236, 0.18);
+  --item-bg-hover: rgba(196, 113, 237, 0.13);
+  --delete-idle: rgba(245, 224, 255, 0.58);
+  --delete-hover: #f3a6b8;
+  --delete-hover-bg: rgba(243, 166, 184, 0.14);
+  --track: rgba(245, 224, 255, 0.09);
+  --fill-grad: linear-gradient(90deg, #ffe2c6, #f3a6b8, #c471ed);
+  --fill-glow: rgba(243, 166, 184, 0.42);
+
+  --gh-border: rgba(243, 166, 184, 0.34);
+  --gh-bg: rgba(196, 113, 237, 0.1);
+  --gh-text: #f2e2ff;
+  --gh-bg-hover: rgba(243, 166, 184, 0.2);
+  --gh-glow: rgba(243, 166, 184, 0.34);
+  --gh-hover-text: #ffe2c6;
+
+  --pop-bg: linear-gradient(145deg, #24123c, #120b28);
+  --backdrop: rgba(8, 5, 20, 0.68);
+  --danger-grad: linear-gradient(135deg, #f3a6b8, #ff7b9c);
+  --danger-text: #160928;
+}
+
+:root[data-theme="galaxia"] body {
+  background-image:
+    radial-gradient(1.5px 1.5px at 24px 38px, rgba(255, 244, 234, 0.92), transparent),
+    radial-gradient(1px 1px at 94px 118px, rgba(229, 198, 255, 0.8), transparent),
+    radial-gradient(1.2px 1.2px at 168px 54px, rgba(255, 214, 224, 0.85), transparent),
+    radial-gradient(1px 1px at 56px 176px, rgba(255, 255, 255, 0.72), transparent),
+    radial-gradient(1.8px 1.8px at 142px 192px, rgba(255, 226, 198, 0.9), transparent),
+    radial-gradient(1px 1px at 212px 92px, rgba(255, 255, 255, 0.75), transparent),
+    radial-gradient(1.3px 1.3px at 274px 158px, rgba(216, 180, 254, 0.85), transparent),
+    radial-gradient(1px 1px at 296px 264px, rgba(255, 255, 255, 0.65), transparent),
+    var(--page-bg);
+  background-size: 211px 211px, 313px 313px, 263px 263px, 197px 197px, 349px 349px, 277px 277px, 331px 331px, 409px 409px, 100% 100%;
+  background-attachment: fixed;
+}
+:root[data-theme="galaxia"] .tag {
+  position: relative;
+  border-left: 0;
+  padding-left: 16px;
+  background: var(--cg, var(--c));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+:root[data-theme="galaxia"] .tag::before {
+  content: '';
+  position: absolute; left: 2px; top: 50%;
+  width: 5px; height: 14px; margin-top: -7px;
+  border-radius: 3px;
+  background: var(--cg, var(--c));
+  box-shadow: 0 0 8px var(--c);
+}
+:root[data-theme="galaxia"] .tag + .goal { padding-left: 16px; }
+:root[data-theme="galaxia"] .title-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 14% 28%, rgba(255, 244, 234, 0.85), transparent),
+    radial-gradient(1px 1px at 31% 72%, rgba(229, 198, 255, 0.8), transparent),
+    radial-gradient(1.5px 1.5px at 66% 24%, rgba(255, 226, 198, 0.9), transparent),
+    radial-gradient(1px 1px at 82% 68%, rgba(255, 255, 255, 0.75), transparent),
+    radial-gradient(1.2px 1.2px at 48% 18%, rgba(243, 166, 184, 0.85), transparent),
+    radial-gradient(1.8px 1.8px at 18% 78%, rgba(255, 236, 220, 0.95), transparent);
+  animation: starTwinkle 4.5s ease-in-out infinite alternate;
+}
+@keyframes starTwinkle {
+  0% { opacity: 0.45; }
+  100% { opacity: 0.95; }
+}

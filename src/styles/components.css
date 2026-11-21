@@ -1,5 +1,16 @@
 /* Month grid, 2x2 charts, to-do list, dialog, toast & congratulatory animations */
 
+/*
+ * Tokens added in this update.
+ * --text-dim is raised from 40% to 60% white for AA contrast on the dark default theme
+ * (Azura and Galaxia define their own values with higher specificity, so they are unaffected).
+ * --sticky-bg gives the frozen habit-name column an opaque background on narrow screens.
+ * These can be moved into themes.css whenever convenient.
+ */
+:root { --text-dim: rgba(255, 255, 255, 0.6); --sticky-bg: #0c1412; }
+:root[data-theme="azura"] { --sticky-bg: #a9e2f0; }
+:root[data-theme="galaxia"] { --sticky-bg: #1b1034; }
+
 /* Month Grid */
 .scroll { overflow-x: auto; }
 #grid { width: 100%; min-width: 1040px; border-collapse: collapse; }
@@ -19,6 +30,13 @@
   background: transparent; min-width: 195px;
   text-align: left; padding-right: 16px;
 }
+/* When the grid scrolls sideways, keep the frozen name column opaque so ticks don't show through */
+@media (max-width: 1120px) {
+  #grid th:first-child, #grid .name { background: var(--sticky-bg); box-shadow: 1px 0 0 var(--line-soft); }
+}
+/* Empty state when there are no habits */
+#grid td.empty { padding: 28px 12px; text-align: left; font-size: 14px; color: var(--text-mid); }
+
 .tag {
   display: inline-block; max-width: 180px; vertical-align: middle;
   padding: 4px 0 4px 10px; border-left: 3px solid var(--c);
@@ -73,9 +91,13 @@ td.celebrate::after, .todo-item.celebrate::after {
 
 /* 2x2 Bar Graphs */
 .charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px; margin-top: 26px; }
+/* Cards in a row stretch to equal height; the chart sits at the bottom so baselines line up */
+.charts .card { display: flex; flex-direction: column; }
 .week-nav { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 12px; }
 .week-label { min-width: 145px; text-align: center; font-size: 13px; font-weight: 600; color: var(--text-mid); }
 .chart { display: flex; gap: 18px; margin-top: 24px; }
+.charts .chart { margin-top: auto; padding-top: 24px; }
+.chart-empty { width: 100%; margin: 0; padding: 56px 12px; text-align: center; font-size: 13px; color: var(--text-dim); }
 .group { flex: 1; min-width: 0; text-align: center; }
 .bars {
   height: 180px; display: flex; align-items: flex-end; justify-content: center; gap: 4px;
@@ -85,7 +107,7 @@ td.celebrate::after, .todo-item.celebrate::after {
 .bar {
   position: relative; flex: 1; max-width: 40px; min-width: 0;
   border-radius: 6px 6px 0 0; box-shadow: var(--bar-shadow);
-  transition: height 0.65s cubic-bezier(0.22, 1, 0.36, 1), filter 0.4s;
+  transition: height 0.9s cubic-bezier(0.22, 1, 0.36, 1), filter 0.4s;
 }
 .bar span {
   position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
@@ -95,23 +117,26 @@ td.celebrate::after, .todo-item.celebrate::after {
 .group label { display: block; margin-top: 8px; font-size: 12px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Bar Progress Increase Congratulatory Glow */
-.bar.bar-up { animation: barGlow 0.9s ease-out; }
+/* The bar rises smoothly (height transition above) while the glow builds, holds, then fades */
+.bar.bar-up { animation: barGlow 1.3s ease-out; }
 .bar.bar-up::before {
   content: '';
   position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
   background: linear-gradient(to top, transparent, var(--flash-tint));
-  animation: barFlash 0.8s ease-out forwards;
+  animation: barFlash 1.1s ease-out forwards;
 }
-.bar.bar-up span { animation: labelPop 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+/* The label pops after the bar has mostly arrived */
+.bar.bar-up span { animation: labelPop 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.45s both; }
 
 @keyframes barGlow {
   0%   { filter: brightness(1); }
-  35%  { filter: brightness(1.35); box-shadow: 0 0 18px var(--bc, var(--accent)), var(--bar-shadow); }
+  25%  { filter: brightness(1.4); box-shadow: 0 0 26px var(--bc, var(--accent)), var(--bar-shadow); }
+  60%  { filter: brightness(1.25); box-shadow: 0 0 20px var(--bc, var(--accent)), var(--bar-shadow); }
   100% { filter: brightness(1); box-shadow: var(--bar-shadow); }
 }
 @keyframes barFlash {
   0%   { opacity: 0; }
-  35%  { opacity: 0.75; }
+  30%  { opacity: 0.75; }
   100% { opacity: 0; }
 }
 @keyframes labelPop {
@@ -153,7 +178,8 @@ td.celebrate::after, .todo-item.celebrate::after {
 .todo-delete:hover { color: var(--delete-hover); background: var(--delete-hover-bg); }
 .todo-progress { margin-top: 14px; text-align: center; }
 .todo-progress-info { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
-.todo-bar-track { height: 8px; border-radius: 4px; background: var(--track); overflow: hidden; }
+/* overflow was "hidden", which clipped the glow of .todo-bar-fill.bar-up; the fill has its own radius */
+.todo-bar-track { height: 8px; border-radius: 4px; background: var(--track); overflow: visible; }
 .todo-bar-fill {
   height: 100%; border-radius: 4px; background: var(--fill-grad);
   transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
@@ -207,10 +233,49 @@ td.celebrate::after, .todo-item.celebrate::after {
 }
 .toast-undo:hover { box-shadow: 0 0 12px var(--btn-glow); }
 
+/* Keyboard focus: one consistent, visible ring for every control (keyboard only, not on mouse clicks).
+   Text inputs and selects keep their own border-glow focus style from base.css. */
+:where(button, a, input, select, summary):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Header Delete button warns in red on hover and keyboard focus */
+#deleteBtn:hover, #deleteBtn:focus-visible {
+  color: var(--delete-hover);
+  background: var(--delete-hover-bg);
+  border-color: var(--delete-hover);
+}
+#deleteBtn:focus-visible { outline-color: var(--delete-hover); }
+
 @media (max-width: 760px) {
   .charts { grid-template-columns: 1fr; }
 }
+
+/*
+ * Reduced motion: keep the feedback, drop the movement.
+ * Previously every celebration was switched off (and triggerAnim() skipped them in JS),
+ * so anyone with "reduce motion" enabled in their OS saw no animation at all.
+ * Now they still get a soft glow and smooth bar growth, but no scaling, sparkles or sliding.
+ */
+@keyframes checkGlow {
+  0%, 100% { filter: brightness(1); }
+  40%      { filter: brightness(1.3); box-shadow: 0 0 12px var(--c, var(--tc, var(--accent))); }
+}
+@keyframes softBrighten {
+  0%, 100% { filter: brightness(1); }
+  40%      { filter: brightness(1.3); }
+}
+@keyframes barGlowSoft {
+  0%   { box-shadow: var(--bar-shadow); }
+  30%  { box-shadow: 0 0 20px var(--bc, var(--accent)), var(--bar-shadow); }
+  100% { box-shadow: var(--bar-shadow); }
+}
 @media (prefers-reduced-motion: reduce) {
-  .toast, .celebrate, .celebrate::after, .bar-up, .bar-up::before, .bar-up span, .todo-bar-fill.bar-up { animation: none; }
-  .bar, .bar span, .todo-bar-fill, .check, .todo-check { transition: none; }
+  .check.celebrate, .todo-check.celebrate { animation: checkGlow 0.5s ease-out; }
+  .bar.bar-up { animation: barGlowSoft 1.2s ease-out; }
+  .todo-bar-fill.bar-up { animation: softBrighten 0.6s ease-out; }
+  td.celebrate::after, .todo-item.celebrate::after, .bar.bar-up::before, .bar.bar-up span, .toast { animation: none; }
+  /* .bar and .todo-bar-fill keep their height/width transitions so progress still grows smoothly */
+  .bar span, .check, .todo-check { transition: none; }
 }

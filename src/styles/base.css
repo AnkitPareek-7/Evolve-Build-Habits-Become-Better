@@ -1,0 +1,242 @@
+/* Base layout, top bar, slender title card with enlarged rotated fading circles, cards, controls */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--page-bg);
+  background-attachment: fixed;
+  color: var(--text);
+  font: 15px/1.4 "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+body::before, body::after, main::before {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+body::before { width: 500px; height: 500px; top: -100px; left: -100px; background: var(--glow-1); filter: blur(120px); }
+body::after { width: 400px; height: 400px; bottom: -50px; right: -50px; background: var(--glow-2); filter: blur(120px); }
+main::before { width: 450px; height: 450px; top: 40%; right: -80px; background: var(--glow-3); filter: blur(140px); }
+
+main {
+  position: relative;
+  z-index: 1;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+/* Top Bar: GitHub (left) & Theme Switch (right) */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-height: 38px;
+  margin-bottom: 18px;
+}
+
+.github-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--gh-border);
+  background: var(--gh-bg);
+  color: var(--gh-text);
+  transition: all 0.3s;
+}
+.github-icon:hover { background: var(--gh-bg-hover); box-shadow: 0 0 16px var(--gh-glow); color: var(--gh-hover-text); }
+.github-icon:focus-visible, .theme-opt:focus-visible, .toast-undo:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.theme-ctrl { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--top-text); }
+.theme-switch {
+  position: relative;
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  padding: 3px;
+  border: 1px solid var(--input-border);
+  border-radius: 999px;
+  background: var(--input-bg);
+}
+.theme-pill {
+  position: absolute;
+  top: 3px; bottom: 3px; left: 3px;
+  width: calc((100% - 6px) / var(--n, 3));
+  border-radius: 999px;
+  background: var(--btn-grad);
+  box-shadow: 0 0 12px var(--btn-glow);
+  transform: translateX(calc(var(--i, 0) * 100%));
+}
+.theme-switch.ready .theme-pill { transition: transform 0.25s ease; }
+.theme-opt {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 6px 15px 6px 12px;
+  border: 0; border-radius: 999px; background: none;
+  color: var(--text-mid); font: inherit; font-size: 13px;
+  cursor: pointer; transition: color 0.25s;
+}
+.theme-opt:hover { color: var(--text); }
+.theme-opt.active, .theme-opt.active:hover { color: var(--btn-text); font-weight: 700; }
+.theme-dot { flex: none; display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--dot); box-shadow: 0 0 0 1.5px currentColor; }
+
+/* Glass Cards + Subtle Curved Bottom Edge Glow */
+.card {
+  position: relative;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--edge-glow);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  filter: drop-shadow(0 1px 4px var(--edge-shadow));
+  pointer-events: none;
+}
+
+/* Slender Title Card + Enlarged Rotated Fading Concentric Circles */
+.title-card {
+  isolation: isolate;
+  padding: 20px 24px;
+  margin-bottom: 26px;
+  text-align: center;
+}
+.title-art {
+  --at: 76% 86%;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(ellipse 100% 180% at var(--at), #000 0%, rgba(0, 0, 0, 0.72) 45%, rgba(0, 0, 0, 0.3) 80%, rgba(0, 0, 0, 0.1) 100%);
+  mask-image: radial-gradient(ellipse 100% 180% at var(--at), #000 0%, rgba(0, 0, 0, 0.72) 45%, rgba(0, 0, 0, 0.3) 80%, rgba(0, 0, 0, 0.1) 100%);
+}
+.title-art::before {
+  content: '';
+  position: absolute;
+  inset: -40px;
+  background:
+    radial-gradient(circle 360px at var(--at), var(--art-core) 0%, var(--art-mid) 52%, transparent 100%),
+    repeating-radial-gradient(circle at var(--at), var(--art-ring-1) 0px, var(--art-ring-2) 75px, transparent 150px, var(--art-ring-1) 220px),
+    radial-gradient(circle at 15% 12%, var(--art-dark), transparent 68%);
+  filter: blur(22px);
+  opacity: 0.85;
+}
+
+h1 {
+  display: inline-block;
+  margin: 0 0 8px;
+  font-family: "Montserrat", "Space Grotesk", sans-serif;
+  font-weight: 900;
+  font-size: clamp(2.15rem, 4.2vw, 2.85rem);
+  line-height: 1;
+  letter-spacing: -0.025em;
+  transform: scaleX(1.16);
+  background: var(--title-grad);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 14px var(--title-glow));
+  animation: gradientShift 6s ease infinite;
+}
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.title-sub {
+  margin: 0 0 4px;
+  font-size: clamp(1rem, 2vw, 1.18rem);
+  font-weight: 600;
+  color: var(--title-sub-color);
+}
+.title-tag {
+  margin: 0;
+  font-size: clamp(0.84rem, 1.5vw, 0.94rem);
+  color: var(--title-tag-color);
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  text-align: center;
+  background: var(--heading-grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+.card-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+.month-nav, .head-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.month-nav { gap: 12px; }
+#monthLabel { min-width: 150px; }
+
+/* Inputs, Selects & Buttons */
+form { display: flex; gap: 8px; }
+
+#habitInput, #targetInput, .todo-form input, .dialog-name input, #goalInput, .dialog-name select {
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  background: var(--input-bg);
+  color: var(--text-soft);
+  font: inherit;
+  outline: none;
+  transition: border-color 0.3s;
+}
+#habitInput:focus, #targetInput:focus, .todo-form input:focus, .dialog-name input:focus, #goalInput:focus, .dialog-name select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px var(--focus-glow);
+}
+#habitInput, .todo-form input, .dialog-name input { padding: 8px 12px; }
+#goalInput, .dialog-name select { padding: 8px 10px; cursor: pointer; }
+.dialog-name input, .dialog-name select { display: block; width: 100%; margin-top: 6px; }
+
+.add, .go-btn {
+  border: 0; border-radius: 10px;
+  background: var(--btn-grad); color: var(--btn-text);
+  font: inherit; font-weight: 700; cursor: pointer; transition: box-shadow 0.3s;
+}
+.add { height: 36px; padding: 0 18px; font-size: 14px; }
+.go-btn { padding: 8px 20px; }
+.add:hover { box-shadow: 0 0 15px var(--btn-glow); }
+.go-btn:hover { box-shadow: 0 0 18px var(--btn-glow); }
+
+.rename-btn {
+  padding: 8px 14px;
+  border: 1px solid var(--sbtn-border); border-radius: 10px;
+  background: var(--sbtn-bg); color: var(--sbtn-text);
+  font: inherit; font-size: 13px; cursor: pointer; transition: all 0.3s;
+}
+.rename-btn:hover { background: var(--sbtn-bg-hover); box-shadow: 0 0 12px var(--sbtn-glow); }
+.rename-btn:disabled { opacity: 0.3; cursor: default; }
+.rename-btn:disabled:hover { background: var(--sbtn-bg); box-shadow: none; }
+.arrow-btn { padding: 5px 11px; line-height: 1; font-size: 14px; }
+
+@media (max-width: 560px) {
+  .theme-ctrl > span { display: none; }
+  .theme-opt { padding: 6px 10px; font-size: 12px; gap: 5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-switch.ready .theme-pill { transition: none; }
+  h1, :root[data-theme="galaxia"] .title-art::after { animation: none; }
+}

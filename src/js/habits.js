@@ -1,19 +1,50 @@
 /* Habit tracker: month grid, 2x2 progress charts, target streak & edit/delete dialog */
 import {
-  $, COLORS, DAY_NAMES, NAME_MAX, STORAGE_KEY, TARGET_DEFAULT, TARGET_KEY, TARGET_MAX,
+  $, COLORS, DATE_RE, DAY_NAMES, HEX_RE, ID_RE, NAME_MAX, STORAGE_KEY, TARGET_DEFAULT, TARGET_KEY, TARGET_MAX,
   esc, fmt, keyOf, lsGet, lsSet, pad, pct, readJSON, todayDate, uid
 } from './config.js';
 import { paletteFor } from './theme.js';
 import { showUndo, triggerAnim } from './effects.js';
 
 const makeHabit = (name, color, goal = 7) => ({ id: uid(), name, color, goal, start: keyOf(new Date()), done: {} });
-const isHabit = (h) => !!h && typeof h.id === 'string' && typeof h.name === 'string' && typeof h.color === 'string' &&
-  typeof h.start === 'string' && !!h.done && typeof h.done === 'object' && !Array.isArray(h.done);
-const isHabits = (d) => Array.isArray(d) && d.every(isHabit);
-const defaultHabits = () => ['Habit 1', 'Habit 2', 'Habit 3'].map((name, i) => makeHabit(name, COLORS[i]));
+const isPlainObject = (o) => !!o && typeof o === 'object' && !Array.isArray(o);
 const normGoal = (g) => (Number.isInteger(g) && g >= 1 && g <= 7 ? g : 7);
-const goalLabel = (g) => (g === 7 ? 'Everyday' : `${g}\u00d7 a week`);
-const loadHabits = () => readJSON(STORAGE_KEY, isHabits, defaultHabits).map((h) => ({ ...h, goal: normGoal(h.goal) }));
+const isHabit = (h) => isPlainObject(h) && typeof h.id === 'string' && ID_RE.test(h.id) && typeof h.name === 'string' &&
+  typeof h.color === 'string' && HEX_RE.test(h.color) && typeof h.start === 'string' && DATE_RE.test(h.start) &&
+  isPlainObject(h.done) && Object.keys(h.done).every((k) => DATE_RE.test(k));
+const isHabits = (d) => Array.isArray(d) && d.every(isHabit) && new Set(d.map((h) => h.id)).size === d.length;
+const defaultHabits = () => ['Habit 1', 'Habit 2', 'Habit 3'].map((name, i) => makeHabit(name, COLORS[i]));
+const goalLabel = (g) => (g === 7 ? 'Everyday' : `${g}× a week`);
+
+/* Rebuilds one stored habit: keeps every ticked day and replaces only what is broken or unsafe */
+function cleanHabit(h, i, ids) {
+  if (!isPlainObject(h)) return null;
+  const done = {};
+  if (isPlainObject(h.done)) for (const k of Object.keys(h.done)) if (DATE_RE.test(k) && h.done[k]) done[k] = true;
+  const first = Object.keys(done).sort()[0];
+  let start = typeof h.start === 'string' && DATE_RE.test(h.start) ? h.start : (first || keyOf(new Date()));
+  if (first && first < start) start = first;
+  let id = typeof h.id === 'string' && ID_RE.test(h.id) ? h.id : uid();
+  while (ids.has(id)) id = uid();
+  ids.add(id);
+  const name = typeof h.name === 'string' ? h.name.trim().slice(0, NAME_MAX).trim() : '';
+  return {
+    id,
+    name: name || `Habit ${i + 1}`,
+    color: typeof h.color === 'string' && HEX_RE.test(h.color) ? h.color : COLORS[i % COLORS.length],
+    goal: normGoal(h.goal),
+    start,
+    done
+  };
+}
+/* Returns the cleaned list, or null when nothing is recoverable (the caller then falls back to defaults) */
+const repairHabits = (data) => {
+  if (!Array.isArray(data)) return null;
+  const ids = new Set();
+  const cleaned = data.map((h, i) => cleanHabit(h, i, ids)).filter(Boolean);
+  return cleaned.length ? cleaned : null;
+};
+const loadHabits = () => readJSON(STORAGE_KEY, isHabits, defaultHabits, repairHabits).map((h) => ({ ...h, goal: normGoal(h.goal) }));
 
 const clampTarget = (v) => Math.min(TARGET_MAX, Math.max(1, v));
 const loadTarget = () => { const v = parseInt(lsGet(TARGET_KEY), 10); return isNaN(v) ? TARGET_DEFAULT : clampTarget(v); };
@@ -57,13 +88,14 @@ function renderGrid(c) {
       `<span class="dn">${d}</span><span class="dw" aria-hidden="true">${name[0]}</span></th>`;
   }).join('') + '</tr>';
 
-  html += shownHabits().map((h) =>
-    `<tr style="--c:${h.color};--cg:${h.grad}"><td class="name"><span class="tag">${esc(h.name)}</span>${h.goal < 7 ? `<span class="goal">${h.goal}\u00d7 / week</span>` : ''}</td>` +
+  const hs = shownHabits();
+  html += hs.length ? hs.map((h) =>
+    `<tr style="--c:${h.color};--cg:${h.grad}"><td class="name"><span class="tag">${esc(h.name)}</span>${h.goal < 7 ? `<span class="goal">${h.goal}× / week</span>` : ''}</td>` +
     days.map((d) => {
       const key = dayKey(c, d);
       return `<td class="${wstart(d)}"><input type="checkbox" class="check" data-id="${h.id}" data-key="${key}" ${h.done[key] ? 'checked' : ''} ${d > c.t ? 'disabled' : ''} aria-label="${esc(h.name)} ${key}"></td>`;
     }).join('') + '</tr>'
-  ).join('');
+  ).join('') : `<tr><td class="empty" colspan="${c.n + 1}">No habits yet. Type a name in “New habit…” above, choose how often, and press Add.</td></tr>`;
 
   $('grid').innerHTML = html;
   $('monthLabel').textContent = c.d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -91,13 +123,13 @@ function drawChart(id, groups, celebrate = false) {
   }
 
   el.dataset.sig = sig;
-  el.innerHTML = groups.map((g) =>
+  el.innerHTML = groups.length ? groups.map((g) =>
     `<div class="group"><div class="bars">` +
     g.bars.map((b) =>
       `<div class="bar" data-to="${b.v}"${b.v === 0 ? ' data-zero="true"' : ''} style="height:0%;background:${b.g};--bc:${b.c}" title="${esc(b.t)}"><span>${fmt(b.v)}</span></div>`
     ).join('') +
     `</div><label>${esc(g.label)}</label></div>`
-  ).join('');
+  ).join('') : '<p class="chart-empty">Add a habit to see your progress here.</p>';
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
     el.querySelectorAll('.bar').forEach((bar) => { bar.style.height = bar.dataset.to + '%'; });
@@ -114,7 +146,7 @@ function renderCharts(c, celebrate = false) {
 
   weekIndex = Math.max(0, Math.min(weekIndex, spans.length - 1));
   const span = spans[weekIndex];
-  const range = span.from === span.to ? `Day ${span.from}` : `Days ${span.from}\u2013${span.to}`;
+  const range = span.from === span.to ? `Day ${span.from}` : `Days ${span.from}–${span.to}`;
   $('weekLabel').textContent = `Week ${weekIndex + 1} (${range})`;
   $('weekPrevBtn').disabled = weekIndex === 0;
   $('weekNextBtn').disabled = weekIndex === spans.length - 1;
@@ -143,18 +175,35 @@ function renderCharts(c, celebrate = false) {
   drawChart('consistency', consistency, celebrate);
 }
 
+/*
+ * Streak = number of days "on track", counted back from today (or from yesterday if today isn't ticked yet).
+ * A habit may miss at most (7 - goal) days in any 7-day window, so:
+ *   - an everyday habit needs an unbroken chain, exactly as before;
+ *   - a "3x a week" habit may rest up to 4 days a week without losing its streak.
+ * The streak always starts on a ticked day, never on a rest day.
+ */
 function streakOf(h) {
-  const d = todayDate();
-  if (!h.done[keyOf(d)]) d.setDate(d.getDate() - 1);
-  let n = 0;
-  while (h.done[keyOf(d)]) { n++; d.setDate(d.getDate() - 1); }
-  return n;
+  const allowed = 7 - h.goal;
+  const day = todayDate();
+  if (!h.done[keyOf(day)]) day.setDate(day.getDate() - 1);
+  const missed = []; // missed[i] is true when the day i days before the start point was not ticked
+  let length = 0;
+  for (let i = 0; i < 3660; i++) {
+    missed.push(!h.done[keyOf(day)]);
+    day.setDate(day.getDate() - 1);
+    let misses = 0;
+    for (let j = Math.max(0, i - 6); j <= i; j++) if (missed[j]) misses++;
+    if (misses > allowed) break;
+    length = i + 1;
+  }
+  while (length > 0 && missed[length - 1]) length--;
+  return length;
 }
 
 function renderTargetStreak(celebrate = false) {
   drawChart('targetStreak', shownHabits().map((h) => {
     const streak = streakOf(h), progress = pct(streak, targetDays);
-    return { label: h.name, bars: [{ v: Math.min(progress, 100), c: h.color, g: h.grad, t: `${h.name}: ${streak} of ${targetDays} days (${fmt(progress)})` }] };
+    return { label: h.name, bars: [{ v: Math.min(progress, 100), c: h.color, g: h.grad, t: `${h.name}: ${streak} of ${targetDays} days${h.goal < 7 ? ' on track' : ''} (${fmt(progress)})` }] };
   }), celebrate);
 }
 

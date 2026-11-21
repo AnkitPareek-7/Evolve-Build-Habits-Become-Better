@@ -10,6 +10,8 @@ export const THEMES = {
   galaxia: { label: 'Galaxia', dot: 'linear-gradient(135deg, #ffe2c6, #c471ed, #6366f1)' }
 };
 
+/*Theme Palettes */
+
 export const THEME_PALETTES = {
   azura: [
     { color: '#CAF0F8', grad: '#CAF0F8' },
@@ -35,13 +37,20 @@ export const TARGET_DEFAULT = 21;
 export const TARGET_MAX = 365;
 export const TODO_MAX = 50;
 
+/* Shapes that stored data must match. Colours and ids end up inside HTML attributes, so they are kept strict. */
+export const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+export const HEX_RE = /^#[0-9a-f]{3,8}$/i;
+export const ID_RE = /^[\w-]{1,64}$/;
+
 export const $ = (id) => document.getElementById(id);
 export const pad = (n) => String(n).padStart(2, '0');
 export const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 export const pct = (n, total) => (n / total) * 100;
 export const fmt = (v) => +v.toFixed(1) + '%';
 export const keyOf = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-export const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+export const uid = () => (typeof crypto !== 'undefined' && crypto.randomUUID
+  ? crypto.randomUUID()
+  : Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
 export const hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 export const todayDate = () => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); };
 
@@ -53,13 +62,38 @@ export function lsSet(key, value) {
   try { localStorage.setItem(key, value); } catch (e) {}
 }
 
-export function readJSON(key, isValid, fallback) {
+/* Keeps the last two unreadable copies (key.backup and key.backup.prev) so a second problem can't erase the first */
+function backup(key, raw) {
+  const prev = lsGet(key + '.backup');
+  if (prev !== null && prev !== raw) lsSet(key + '.backup.prev', prev);
+  lsSet(key + '.backup', raw);
+}
+
+/*
+ * Reads and validates JSON from localStorage.
+ *  - valid data is returned as is.
+ *  - invalid data is backed up first. If a repair(data) function is given and returns something,
+ *    that cleaned copy is saved and returned, so one bad entry no longer wipes everything.
+ *  - otherwise (or if the JSON can't be parsed at all) fallback() is returned.
+ */
+export function readJSON(key, isValid, fallback, repair) {
   const raw = lsGet(key);
   if (raw === null) return fallback();
+  let data, parsed = false;
   try {
-    const data = JSON.parse(raw);
+    data = JSON.parse(raw);
+    parsed = true;
     if (isValid(data)) return data;
   } catch (e) {}
-  lsSet(key + '.backup', raw);
+  backup(key, raw);
+  if (parsed && repair) {
+    try {
+      const fixed = repair(data);
+      if (fixed !== null && fixed !== undefined) {
+        lsSet(key, JSON.stringify(fixed));
+        return fixed;
+      }
+    } catch (e) {}
+  }
   return fallback();
 }

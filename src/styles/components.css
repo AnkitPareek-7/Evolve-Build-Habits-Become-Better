@@ -1,0 +1,216 @@
+/* Month grid, 2x2 charts, to-do list, dialog, toast & congratulatory animations */
+
+/* Month Grid */
+.scroll { overflow-x: auto; }
+#grid { width: 100%; min-width: 1040px; border-collapse: collapse; }
+#grid th, #grid td { padding: 4px 2px; text-align: center; }
+#grid th { font-size: 11px; font-weight: 600; color: var(--text-dim); }
+#grid .sub-heading {
+  font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--accent-text); padding-bottom: 6px;
+}
+#grid .wk { font-size: 12px; color: var(--week-text); padding-bottom: 6px; }
+#grid .today { color: var(--accent-text); box-shadow: inset 0 -2px var(--accent); }
+.wstart { border-left: 1px solid var(--line-soft); }
+
+#grid th:first-child, #grid .name {
+  position: sticky; left: 0; z-index: 1;
+  background: transparent; min-width: 195px;
+  text-align: left; padding-right: 16px;
+}
+.tag {
+  display: inline-block; max-width: 180px; vertical-align: middle;
+  padding: 4px 0 4px 10px; border-left: 3px solid var(--c);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  color: var(--tag-text, var(--c));
+  font-weight: 600; font-size: 13px; letter-spacing: 0.3px;
+}
+#grid th .dn { display: block; }
+#grid th .dw { display: block; margin-top: 1px; font-size: 10px; font-weight: 500; opacity: 0.8; }
+#grid .goal { display: block; padding-left: 13px; font-size: 10.5px; line-height: 1.2; color: var(--text-dim); font-weight: 500; }
+
+.check, .todo-check {
+  -webkit-appearance: none; appearance: none; margin: 0;
+  cursor: pointer; border-radius: 6px; background: var(--check-bg);
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.check { width: 22px; height: 22px; vertical-align: middle; border: 1.5px solid var(--check-border, color-mix(in srgb, var(--c) 25%, #333)); }
+.check:checked {
+  border-color: var(--check-on-border, var(--c));
+  background: var(--tick) center / 75% no-repeat, var(--cg, var(--c));
+  box-shadow: var(--check-on-shadow, 0 0 8px color-mix(in srgb, var(--c) 35%, transparent));
+}
+.check:disabled { opacity: 0.25; cursor: default; }
+
+/* Checkbox Congratulatory Pop & 6-Point Sparkle Burst */
+.check.celebrate, .todo-check.celebrate { animation: checkPop 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
+td.celebrate, .todo-item.celebrate { position: relative; }
+td.celebrate::after, .todo-item.celebrate::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 4px; height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+  --sc: var(--c, var(--tc, var(--accent)));
+  animation: sparkleBurst 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.todo-item.celebrate::after { left: 24px; --sc: var(--tc, var(--accent)); }
+
+@keyframes checkPop {
+  0%   { transform: scale(0.85); box-shadow: 0 0 0 0 var(--c, var(--tc, var(--accent))); }
+  40%  { transform: scale(1.28); box-shadow: 0 0 14px var(--c, var(--tc, var(--accent))), 0 0 0 6px color-mix(in srgb, var(--c, var(--tc, var(--accent))) 35%, transparent); }
+  72%  { transform: scale(0.94); }
+  100% { transform: scale(1); box-shadow: var(--check-on-shadow, 0 0 8px color-mix(in srgb, var(--c, var(--tc, var(--accent))) 35%, transparent)); }
+}
+@keyframes sparkleBurst {
+  0%   { opacity: 1; box-shadow: 0 0 0 0 var(--sc), 0 0 0 0 var(--spark-2), 0 0 0 0 var(--sc), 0 0 0 0 var(--spark-2), 0 0 0 0 var(--sc), 0 0 0 0 var(--spark-2); }
+  100% { opacity: 0; box-shadow: 0 -17px 0 -1px var(--sc), 15px -9px 0 -1px var(--spark-2), 15px 9px 0 -1px var(--sc), 0 17px 0 -1px var(--spark-2), -15px 9px 0 -1px var(--sc), -15px -9px 0 -1px var(--spark-2); }
+}
+
+/* 2x2 Bar Graphs */
+.charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px; margin-top: 26px; }
+.week-nav { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 12px; }
+.week-label { min-width: 145px; text-align: center; font-size: 13px; font-weight: 600; color: var(--text-mid); }
+.chart { display: flex; gap: 18px; margin-top: 24px; }
+.group { flex: 1; min-width: 0; text-align: center; }
+.bars {
+  height: 180px; display: flex; align-items: flex-end; justify-content: center; gap: 4px;
+  border-bottom: 2px solid var(--line);
+  background: linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0 / 100% 25%;
+}
+.bar {
+  position: relative; flex: 1; max-width: 40px; min-width: 0;
+  border-radius: 6px 6px 0 0; box-shadow: var(--bar-shadow);
+  transition: height 0.65s cubic-bezier(0.22, 1, 0.36, 1), filter 0.4s;
+}
+.bar span {
+  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+  padding-bottom: 2px; font-size: 10px; color: var(--text-muted); white-space: nowrap;
+  transition: transform 0.35s, color 0.35s;
+}
+.group label { display: block; margin-top: 8px; font-size: 12px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Bar Progress Increase Congratulatory Glow */
+.bar.bar-up { animation: barGlow 0.9s ease-out; }
+.bar.bar-up::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(to top, transparent, var(--flash-tint));
+  animation: barFlash 0.8s ease-out forwards;
+}
+.bar.bar-up span { animation: labelPop 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+
+@keyframes barGlow {
+  0%   { filter: brightness(1); }
+  35%  { filter: brightness(1.35); box-shadow: 0 0 18px var(--bc, var(--accent)), var(--bar-shadow); }
+  100% { filter: brightness(1); box-shadow: var(--bar-shadow); }
+}
+@keyframes barFlash {
+  0%   { opacity: 0; }
+  35%  { opacity: 0.75; }
+  100% { opacity: 0; }
+}
+@keyframes labelPop {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  45%      { transform: translateX(-50%) scale(1.24); color: var(--accent-text); font-weight: 700; }
+}
+
+/* Target Streak */
+.target-controls { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+.target-controls label { font-size: 14px; color: var(--text-mid); }
+#targetInput { width: 80px; padding: 8px 10px; text-align: center; }
+
+/* Daily To-Do List (second card, above habit grid) */
+.todo-card { margin-bottom: 26px; }
+.todo-nav { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 12px; }
+.todo-date { min-width: 190px; text-align: center; font-size: 14px; color: var(--text-mid); }
+.todo-form { display: flex; gap: 8px; margin-top: 14px; justify-content: center; }
+.todo-form input { flex: 1; max-width: 400px; }
+.todo-list { list-style: none; margin: 16px 0 0; padding: 0; }
+.todo-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: 10px; margin-bottom: 6px;
+  background: var(--item-bg); border: 1px solid var(--item-border); transition: background 0.2s;
+}
+.todo-item:hover { background: var(--item-bg-hover); }
+.todo-check { width: 20px; height: 20px; min-width: 20px; border: 1.5px solid var(--check-border, color-mix(in srgb, var(--tc) 40%, #333)); }
+.todo-check:checked {
+  border-color: var(--check-on-border, var(--tc));
+  background: var(--tick) center / 75% no-repeat, var(--tcg, var(--tc));
+  box-shadow: var(--check-on-shadow, 0 0 8px color-mix(in srgb, var(--tc) 35%, transparent));
+}
+.todo-text { flex: 1; font-size: 14px; color: var(--text-soft); word-break: break-word; }
+.todo-text.done { text-decoration: line-through; opacity: 0.4; }
+.todo-delete {
+  border: 0; background: none; color: var(--delete-idle);
+  font: inherit; font-size: 13px; cursor: pointer;
+  padding: 4px 10px; border-radius: 6px; transition: all 0.2s;
+}
+.todo-delete:hover { color: var(--delete-hover); background: var(--delete-hover-bg); }
+.todo-progress { margin-top: 14px; text-align: center; }
+.todo-progress-info { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+.todo-bar-track { height: 8px; border-radius: 4px; background: var(--track); overflow: hidden; }
+.todo-bar-fill {
+  height: 100%; border-radius: 4px; background: var(--fill-grad);
+  transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 0 10px var(--fill-glow);
+}
+.todo-bar-fill.bar-up { animation: todoBarGlow 0.85s ease-out; }
+@keyframes todoBarGlow {
+  0%, 100% { filter: brightness(1); }
+  40%      { filter: brightness(1.35); box-shadow: 0 0 16px var(--accent); }
+}
+
+/* Dialog & Undo Toast */
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.dialog {
+  width: min(420px, calc(100vw - 32px)); padding: 0;
+  border: 1px solid var(--card-border); border-radius: 16px;
+  background: var(--pop-bg); color: var(--text);
+  box-shadow: var(--card-shadow), 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+.dialog::backdrop { background: var(--backdrop); }
+.dialog [hidden], .toast[hidden] { display: none !important; }
+.dialog-box { display: block; padding: 22px; }
+.dialog h2 { margin-bottom: 14px; }
+.dialog-empty { margin: 0 0 14px; text-align: center; color: var(--text-mid); }
+.dialog-list { min-width: 0; max-height: 240px; margin: 0 0 14px; padding: 0; border: 0; overflow-y: auto; }
+.dialog-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid transparent; border-radius: 10px; color: var(--text-soft); cursor: pointer; transition: background 0.2s; }
+.dialog-row:hover { background: var(--item-bg-hover); }
+.dialog-row:has(input:checked) { background: var(--item-bg); border-color: var(--sbtn-border); }
+.dialog-row input { margin: 0; accent-color: var(--accent); }
+.dialog-swatch { flex: none; width: 12px; height: 12px; border-radius: 4px; background: var(--cg, var(--c)); box-shadow: var(--legend-ring, none); }
+.dialog-habit { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dialog-name { display: block; margin-bottom: 16px; font-size: 13px; color: var(--text-mid); }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.add.danger { background: var(--danger-grad); color: var(--danger-text); }
+.add.danger:hover { box-shadow: 0 0 15px color-mix(in srgb, var(--delete-hover) 45%, transparent); }
+
+.toast {
+  position: fixed; left: 50%; bottom: 24px; z-index: 20;
+  display: flex; align-items: center; gap: 14px; max-width: calc(100vw - 32px);
+  padding: 8px 8px 8px 18px; border: 1px solid var(--card-border); border-radius: 999px;
+  background: var(--pop-bg); color: var(--text); font-size: 14px;
+  box-shadow: var(--card-shadow), 0 8px 30px rgba(0, 0, 0, 0.35);
+  transform: translateX(-50%); animation: toastIn 0.25s ease;
+}
+@keyframes toastIn { from { opacity: 0; transform: translate(-50%, 12px); } }
+#toastText { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.toast-undo {
+  flex: none; padding: 6px 16px; border: 0; border-radius: 999px;
+  background: var(--btn-grad); color: var(--btn-text);
+  font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: box-shadow 0.3s;
+}
+.toast-undo:hover { box-shadow: 0 0 12px var(--btn-glow); }
+
+@media (max-width: 760px) {
+  .charts { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast, .celebrate, .celebrate::after, .bar-up, .bar-up::before, .bar-up span, .todo-bar-fill.bar-up { animation: none; }
+  .bar, .bar span, .todo-bar-fill, .check, .todo-check { transition: none; }
+}

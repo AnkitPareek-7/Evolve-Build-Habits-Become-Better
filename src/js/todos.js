@@ -1,15 +1,51 @@
 /* Daily To-Do List with per-date storage & animated progress */
-import { $, COLORS, TODO_KEY, TODO_MAX, esc, keyOf, lsSet, readJSON, todayDate, uid } from './config.js';
+import { $, COLORS, DATE_RE, HEX_RE, ID_RE, TODO_KEY, TODO_MAX, esc, keyOf, lsSet, readJSON, todayDate, uid } from './config.js';
 import { paletteFor } from './theme.js';
 import { showUndo, triggerAnim } from './effects.js';
 
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-const isTask = (t) => !!t && typeof t.id === 'string' && typeof t.text === 'string' && typeof t.color === 'string' && typeof t.done === 'boolean';
-const isTaskList = (a) => Array.isArray(a) && a.every(isTask);
+const isTask = (t) => !!t && typeof t.id === 'string' && ID_RE.test(t.id) && typeof t.text === 'string' &&
+  typeof t.color === 'string' && HEX_RE.test(t.color) && typeof t.done === 'boolean';
+const isTaskList = (a) => Array.isArray(a) && a.every(isTask) && new Set(a.map((t) => t.id)).size === a.length;
 const isTodoStore = (d) => isTaskList(d) || (!!d && typeof d === 'object' && !Array.isArray(d) && Object.keys(d).every((k) => DATE_RE.test(k) && isTaskList(d[k])));
 
+/* Rebuilds one stored task, or returns null when it has no usable text */
+function cleanTask(t, i, ids) {
+  if (!t || typeof t !== 'object' || Array.isArray(t)) return null;
+  const text = typeof t.text === 'string' ? t.text.trim().slice(0, TODO_MAX).trim() : '';
+  if (!text) return null;
+  let id = typeof t.id === 'string' && ID_RE.test(t.id) ? t.id : uid();
+  while (ids.has(id)) id = uid();
+  ids.add(id);
+  return {
+    id,
+    text,
+    color: typeof t.color === 'string' && HEX_RE.test(t.color) ? t.color : COLORS[i % COLORS.length],
+    done: t.done === true
+  };
+}
+const cleanList = (list) => {
+  const ids = new Set();
+  return (Array.isArray(list) ? list : []).map((t, i) => cleanTask(t, i, ids)).filter(Boolean);
+};
+
+/* Keeps every good task and every good day; only broken entries are dropped or fixed */
+function repairTodos(data) {
+  if (Array.isArray(data)) {
+    const list = cleanList(data);
+    return list.length ? { [keyOf(new Date())]: list } : {};
+  }
+  if (!data || typeof data !== 'object') return null;
+  const store = {};
+  for (const k of Object.keys(data)) {
+    if (!DATE_RE.test(k)) continue;
+    const list = cleanList(data[k]);
+    if (list.length) store[k] = list;
+  }
+  return store;
+}
+
 function loadTodos() {
-  const data = readJSON(TODO_KEY, isTodoStore, () => ({}));
+  const data = readJSON(TODO_KEY, isTodoStore, () => ({}), repairTodos);
   if (Array.isArray(data)) {
     const store = data.length ? { [keyOf(new Date())]: data } : {};
     lsSet(TODO_KEY, JSON.stringify(store));

@@ -1,64 +1,84 @@
-/* Month grid, 2x2 charts, to-do list, dialog, toast & congratulatory animations */
+/* Month grid, 2x2 charts, to-do list, dialogs, toast & congratulatory animations */
 
 /*
- * Tokens added in this update.
  * --text-dim is raised from 40% to 60% white for AA contrast on the dark default theme
- * (Azura and Galaxia define their own values with higher specificity, so they are unaffected).
+ * (Azura defines its own value with higher specificity, so it is unaffected).
  * --sticky-bg gives the frozen habit-name column an opaque background on narrow screens.
- * These can be moved into themes.css whenever convenient.
  */
 :root { --text-dim: rgba(255, 255, 255, 0.6); --sticky-bg: #0c1412; }
 :root[data-theme="azura"] { --sticky-bg: #a9e2f0; }
-:root[data-theme="galaxia"] { --sticky-bg: #1b1034; }
 
-/* Month Grid */
+/* Month Grid: compact, GitHub-style boxes */
 .scroll { overflow-x: auto; }
-#grid { width: 100%; min-width: 1040px; border-collapse: collapse; }
-#grid th, #grid td { padding: 4px 2px; text-align: center; }
+#grid { width: auto; margin: 0 auto; border-collapse: collapse; }
+#grid th, #grid td { padding: 3px 1px; text-align: center; }
 #grid th { font-size: 11px; font-weight: 600; color: var(--text-dim); }
 #grid .sub-heading {
-  font-size: 12px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 1px;
+  font-size: 13px; font-weight: 700;
   color: var(--accent-text); padding-bottom: 6px;
 }
 #grid .wk { font-size: 12px; color: var(--week-text); padding-bottom: 6px; }
 #grid .today { color: var(--accent-text); box-shadow: inset 0 -2px var(--accent); }
-.wstart { border-left: 1px solid var(--line-soft); }
+/* A little extra space at the start of each week replaces the old vertical divider */
+#grid .wstart { padding-left: 10px; }
+
+/* Tracking day: columns before it are dimmed and locked; its own column gets a dashed marker */
+.track-info { margin: 0 0 12px; font-size: 13px; color: var(--text-mid); }
+#grid th.before { opacity: 0.45; }
+#grid .tstart { border-left: 2px dashed var(--accent); }
+/* Rest days and locked days show a faded box so it is clear they are not part of the plan */
+#grid td.rest .check { opacity: 0.12; }
+#grid td.locked .check { opacity: 0.12; }
+.card-note { margin: 6px 0 0; text-align: center; font-size: 12px; line-height: 1.4; color: var(--text-dim); }
 
 #grid th:first-child, #grid .name {
   position: sticky; left: 0; z-index: 1;
-  background: transparent; min-width: 195px;
+  background: transparent; min-width: 330px;
   text-align: left; padding-right: 16px;
+  /* Vertical divider between the habit column and the checkbox section */
+  box-shadow: inset -1px 0 0 var(--line);
 }
+/* "Habits" label is centred over the name column */
+#grid th.sub-heading { text-align: center; padding-right: 0; }
 /* When the grid scrolls sideways, keep the frozen name column opaque so ticks don't show through */
-@media (max-width: 1120px) {
-  #grid th:first-child, #grid .name { background: var(--sticky-bg); box-shadow: 1px 0 0 var(--line-soft); }
+@media (max-width: 1260px) {
+  #grid th:first-child, #grid .name { background: var(--sticky-bg); }
 }
 /* Empty state when there are no habits */
 #grid td.empty { padding: 28px 12px; text-align: left; font-size: 14px; color: var(--text-mid); }
 
+/* Habit name cell: scheduled weekdays (M W F) on the left, name next to them */
+.name-row { display: flex; align-items: center; gap: 10px; }
+.goal {
+  flex: none; width: 66px; text-align: right;
+  font-size: 10.5px; line-height: 1.2; font-weight: 600; letter-spacing: 0.5px;
+  white-space: nowrap; color: var(--text-dim);
+}
 .tag {
-  display: inline-block; max-width: 180px; vertical-align: middle;
-  padding: 4px 0 4px 10px; border-left: 3px solid var(--c);
+  position: relative; display: block; flex: 1; min-width: 0; max-width: 230px;
+  padding: 4px 0 4px 16px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   color: var(--tag-text, var(--c));
   font-weight: 600; font-size: 13px; letter-spacing: 0.3px;
 }
+/* Habit colour indicator: identical pill in every theme */
+.tag::before {
+  content: '';
+  position: absolute; left: 2px; top: 50%;
+  width: 6px; height: 14px; margin-top: -7px;
+  border-radius: 3px; background: var(--c);
+}
 #grid th .dn { display: block; }
 #grid th .dw { display: block; margin-top: 1px; font-size: 10px; font-weight: 500; opacity: 0.8; }
-#grid .goal { display: block; padding-left: 13px; font-size: 10.5px; line-height: 1.2; color: var(--text-dim); font-weight: 500; }
 
+/* Checkboxes: flat squares with no outline; ticking fills the box with the habit's colour */
 .check, .todo-check {
-  -webkit-appearance: none; appearance: none; margin: 0;
-  cursor: pointer; border-radius: 6px; background: var(--check-bg);
-  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  -webkit-appearance: none; appearance: none; margin: 0; border: 0;
+  cursor: pointer; background: var(--check-bg);
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
-.check { width: 22px; height: 22px; vertical-align: middle; border: 1.5px solid var(--check-border, color-mix(in srgb, var(--c) 25%, #333)); }
-.check:checked {
-  border-color: var(--check-on-border, var(--c));
-  background: var(--tick) center / 75% no-repeat, var(--cg, var(--c));
-  box-shadow: var(--check-on-shadow, 0 0 8px color-mix(in srgb, var(--c) 35%, transparent));
-}
+.check { width: 24px; height: 22px; vertical-align: middle; border-radius: 4px; }
+.check:checked { background: var(--cg, var(--c)); box-shadow: var(--check-on-shadow, none); }
 .check:disabled { opacity: 0.25; cursor: default; }
 
 /* Checkbox Congratulatory Pop & 6-Point Sparkle Burst */
@@ -82,7 +102,7 @@ td.celebrate::after, .todo-item.celebrate::after {
   0%   { transform: scale(0.85); box-shadow: 0 0 0 0 var(--c, var(--tc, var(--accent))); }
   40%  { transform: scale(1.28); box-shadow: 0 0 14px var(--c, var(--tc, var(--accent))), 0 0 0 6px color-mix(in srgb, var(--c, var(--tc, var(--accent))) 35%, transparent); }
   72%  { transform: scale(0.94); }
-  100% { transform: scale(1); box-shadow: var(--check-on-shadow, 0 0 8px color-mix(in srgb, var(--c, var(--tc, var(--accent))) 35%, transparent)); }
+  100% { transform: scale(1); box-shadow: var(--check-on-shadow, none); }
 }
 @keyframes sparkleBurst {
   0%   { opacity: 1; box-shadow: 0 0 0 0 var(--sc), 0 0 0 0 var(--spark-2), 0 0 0 0 var(--sc), 0 0 0 0 var(--spark-2), 0 0 0 0 var(--sc), 0 0 0 0 var(--spark-2); }
@@ -162,12 +182,8 @@ td.celebrate::after, .todo-item.celebrate::after {
   background: var(--item-bg); border: 1px solid var(--item-border); transition: background 0.2s;
 }
 .todo-item:hover { background: var(--item-bg-hover); }
-.todo-check { width: 20px; height: 20px; min-width: 20px; border: 1.5px solid var(--check-border, color-mix(in srgb, var(--tc) 40%, #333)); }
-.todo-check:checked {
-  border-color: var(--check-on-border, var(--tc));
-  background: var(--tick) center / 75% no-repeat, var(--tcg, var(--tc));
-  box-shadow: var(--check-on-shadow, 0 0 8px color-mix(in srgb, var(--tc) 35%, transparent));
-}
+.todo-check { width: 20px; height: 20px; min-width: 20px; border-radius: 4px; }
+.todo-check:checked { background: var(--tcg, var(--tc)); box-shadow: var(--check-on-shadow, none); }
 .todo-text { flex: 1; font-size: 14px; color: var(--text-soft); word-break: break-word; }
 .todo-text.done { text-decoration: line-through; opacity: 0.4; }
 .todo-delete {
@@ -212,7 +228,40 @@ td.celebrate::after, .todo-item.celebrate::after {
 .dialog-swatch { flex: none; width: 12px; height: 12px; border-radius: 4px; background: var(--cg, var(--c)); box-shadow: var(--legend-ring, none); }
 .dialog-habit { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dialog-name { display: block; margin-bottom: 16px; font-size: 13px; color: var(--text-mid); }
-.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.dialog-note { margin: 0 0 16px; font-size: 13px; line-height: 1.5; color: var(--text-mid); }
+.dialog input[type="date"] { color-scheme: dark; }
+:root[data-theme="azura"] .dialog input[type="date"] { color-scheme: light; }
+
+/* Info popup (opened from the icon next to the GitHub link) */
+.info-dialog { width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 48px); }
+.info-body { max-height: min(60vh, 520px); margin-bottom: 16px; padding-right: 6px; overflow-y: auto; font-size: 14px; line-height: 1.5; color: var(--text-soft); }
+.info-body h3 { margin: 0 0 8px; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent-text); }
+.info-body h3:not(:first-child) { margin-top: 18px; }
+.info-body ul { margin: 0; padding-left: 18px; }
+.info-body li { margin-bottom: 8px; }
+.info-body dl { margin: 0; }
+.info-body dt { margin-top: 10px; font-weight: 700; color: var(--text); }
+.info-body dd { margin: 2px 0 0; color: var(--text-mid); }
+
+/* Weekday picker (M T W T F S S) used by Add and Edit */
+.day-wrap { min-width: 0; margin: 0 0 16px; padding: 0; border: 0; }
+.day-wrap legend { padding: 0; margin-bottom: 8px; font-size: 13px; color: var(--text-mid); }
+.day-picker { display: flex; gap: 6px; }
+.day-chip { position: relative; flex: 1; max-width: 48px; }
+.day-chip input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.day-chip input:focus-visible { outline: none; }
+.day-chip input + span {
+  display: flex; align-items: center; justify-content: center; height: 38px;
+  border: 1px solid var(--input-border); border-radius: 10px;
+  background: var(--input-bg); color: var(--text-mid);
+  font-size: 14px; font-weight: 700; user-select: none;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.day-chip:hover input + span { border-color: var(--accent); }
+.day-chip input:checked + span { border-color: transparent; background: var(--btn-grad); color: var(--btn-text); box-shadow: 0 0 10px var(--btn-glow); }
+.day-chip input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.day-hint { min-height: 1.4em; margin: 10px 0 0; font-size: 12.5px; color: var(--text-mid); }
 .add.danger { background: var(--danger-grad); color: var(--danger-text); }
 .add.danger:hover { box-shadow: 0 0 15px color-mix(in srgb, var(--delete-hover) 45%, transparent); }
 
@@ -254,9 +303,8 @@ td.celebrate::after, .todo-item.celebrate::after {
 
 /*
  * Reduced motion: keep the feedback, drop the movement.
- * Previously every celebration was switched off (and triggerAnim() skipped them in JS),
- * so anyone with "reduce motion" enabled in their OS saw no animation at all.
- * Now they still get a soft glow and smooth bar growth, but no scaling, sparkles or sliding.
+ * People with "reduce motion" enabled still get a soft glow and smooth bar growth,
+ * but no scaling, sparkles or sliding.
  */
 @keyframes checkGlow {
   0%, 100% { filter: brightness(1); }

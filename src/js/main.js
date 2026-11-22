@@ -1,9 +1,10 @@
 /* Application entry point: init modules, midnight rollover & multi-tab sync */
-import { STORAGE_KEY, TARGET_KEY, THEME_KEY, TODO_KEY, todayDate } from './config.js';
+import { STORAGE_KEY, TARGET_KEY, THEME_KEY, TODO_KEY, TRACK_KEY, todayDate } from './config.js';
 import { initThemeSwitch, syncThemeFromStorage } from './theme.js';
 import { hideToast } from './effects.js';
 import { initHabits, onHabitsDayRollover, renderHabits, syncHabitsFromStorage } from './habits.js';
 import { initTodos, onTodosDayRollover, renderTodos, syncTodosFromStorage } from './todos.js';
+import './info.js';
 
 initThemeSwitch(() => {
   renderHabits();
@@ -28,7 +29,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) chec
 window.addEventListener('focus', checkNewDay);
 
 window.addEventListener('storage', (e) => {
-  if (e.key !== null && ![STORAGE_KEY, TARGET_KEY, TODO_KEY, THEME_KEY].includes(e.key)) return;
+  if (e.key !== null && ![STORAGE_KEY, TARGET_KEY, TODO_KEY, THEME_KEY, TRACK_KEY].includes(e.key)) return;
   hideToast();
   syncThemeFromStorage();
   syncHabitsFromStorage();

@@ -1,4 +1,4 @@
-/* Theme management (Zestia, Azura & Galaxia) */
+/* Theme management (Zestia & Azura) */
 import { $, THEMES, THEME_PALETTES, THEME_KEY, esc, hasOwn, lsGet, lsSet } from './config.js';
 
 const loadTheme = () => {

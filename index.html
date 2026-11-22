@@ -16,16 +16,21 @@
     try {
       var t = localStorage.getItem('evolve.theme');
       if (t === 'light') t = 'azura';
-      if (t === 'azura' || t === 'galaxia') document.documentElement.setAttribute('data-theme', t);
+      if (t === 'azura') document.documentElement.setAttribute('data-theme', t);
     } catch (e) {}
   </script>
 </head>
 <body>
   <main>
     <div class="top-bar">
-      <a class="github-icon" href="https://github.com/AnkitPareek-7" target="_blank" rel="noopener" title="Follow AnkitPareek on GitHub" aria-label="Follow AnkitPareek on GitHub">
-        <svg height="20" width="20" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-      </a>
+      <div class="top-left">
+        <a class="github-icon" href="https://github.com/AnkitPareek-7" target="_blank" rel="noopener" title="Follow AnkitPareek on GitHub" aria-label="Follow AnkitPareek on GitHub">
+          <svg height="20" width="20" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        </a>
+        <button type="button" class="info-btn" id="infoBtn" title="About Evolve" aria-label="About Evolve" aria-haspopup="dialog">
+          <svg height="20" width="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-5"/><path d="M12 8h.01"/></svg>
+        </button>
+      </div>
       <div class="theme-ctrl">
         <span id="themeLabel">Theme</span>
         <div class="theme-switch" id="themeSwitch" role="radiogroup" aria-labelledby="themeLabel"></div>
@@ -62,21 +67,20 @@
           <button class="rename-btn" id="nextBtn" title="Next month">Next</button>
         </div>
         <div class="head-actions">
-          <button class="rename-btn" id="renameBtn" title="Edit habit">Edit</button>
-          <button class="rename-btn" id="deleteBtn" title="Delete habit">Delete</button>
-          <form id="addForm">
-            <input id="habitInput" placeholder="New habit…" maxlength="30" aria-label="New habit name" required />
-            <select id="goalInput" aria-label="How often per week"></select>
-            <button class="add" title="Add habit" aria-label="Add habit">Add</button>
-          </form>
+          <button type="button" class="rename-btn" id="trackBtn" title="Choose the day you start tracking from">Set your tracking day</button>
+          <button type="button" class="rename-btn" id="renameBtn" title="Edit habit">Edit</button>
+          <button type="button" class="rename-btn" id="deleteBtn" title="Delete habit">Delete</button>
+          <button type="button" class="add" id="addHabitBtn" title="Add a new habit">Add a Habit</button>
         </div>
       </div>
+      <p id="trackInfo" class="track-info" role="status"></p>
       <div class="scroll"><table id="grid"></table></div>
     </section>
 
     <section class="charts">
       <div class="card">
         <h2>Weekly Progress</h2>
+        <p class="card-note">Ticked days out of the days scheduled in this week.</p>
         <div class="week-nav">
           <button class="rename-btn arrow-btn" id="weekPrevBtn" title="Previous week" aria-label="Previous week">&larr;</button>
           <span id="weekLabel" class="week-label"></span>
@@ -86,14 +90,17 @@
       </div>
       <div class="card">
         <h2>Monthly Progress</h2>
+        <p class="card-note">Ticked days out of all the days scheduled this month.</p>
         <div id="monthly" class="chart"></div>
       </div>
       <div class="card">
         <h2>Consistency</h2>
+        <p class="card-note">Ticked days out of every scheduled day since you started. Rest days never count against you.</p>
         <div id="consistency" class="chart"></div>
       </div>
       <div class="card">
         <h2>Your Target Streak</h2>
+        <p class="card-note">Days in a row on schedule. Rest days don&rsquo;t break a streak; a missed scheduled day does.</p>
         <div class="target-controls">
           <label for="targetInput">Set Target (days):</label>
           <input type="number" id="targetInput" min="1" max="365" value="21" />
@@ -103,6 +110,40 @@
       </div>
     </section>
   </main>
+
+  <dialog id="infoDialog" class="dialog info-dialog" aria-labelledby="infoTitle">
+    <div class="dialog-box">
+      <h2 id="infoTitle">About Evolve</h2>
+      <div class="info-body">
+        <h3>Features</h3>
+        <ul>
+          <li><strong>Daily To-Do List</strong>: add tasks (up to 50 characters) for any day, tick them off and remove them (with Undo). Use Prev and Next to look at earlier days. A progress bar shows how much of the day is done.</li>
+          <li><strong>Monthly habit grid</strong>: one row per habit, one box per day. Ticking a box fills it with the habit&rsquo;s colour. Use Prev and Next to move between months.</li>
+          <li><strong>Add, Edit and Delete habits</strong>: give each habit a name (up to 30 characters) and choose its weekdays. The letters left of the name (for example M W F) show its scheduled days. Deleting a habit can be undone.</li>
+          <li><strong>Rest days and locked boxes</strong>: boxes are open only on a habit&rsquo;s scheduled days. Other weekdays are faded rest days, and future days stay locked.</li>
+          <li><strong>Set your tracking day</strong>: pick the date you start tracking from. Earlier boxes are locked and every chart counts from that day, for all habits.</li>
+          <li><strong>Themes</strong>: switch between Zestia (dark) and Azura (light).</li>
+          <li><strong>Saved in your browser</strong>: everything is stored on this device and stays in sync across open tabs. Clearing site data removes it.</li>
+        </ul>
+        <h3>Statistics</h3>
+        <dl>
+          <dt>Weekly Progress</dt>
+          <dd>Ticked days divided by scheduled days in the selected week of the month. Use the arrows to change week.</dd>
+          <dt>Monthly Progress</dt>
+          <dd>Ticked days divided by all scheduled days in the month shown.</dd>
+          <dt>Consistency</dt>
+          <dd>Ticked days divided by every scheduled day since you started (your tracking day, or the day the habit was added), up to today. Today is not held against you until you tick it.</dd>
+          <dt>Your Target Streak</dt>
+          <dd>The number of days in a row you have kept to the schedule, compared with your target (1 to 365 days, default 21). Rest days do not break a streak; a missed scheduled day does.</dd>
+          <dt>A dash (&ndash;) on a bar</dt>
+          <dd>There is nothing to measure yet: no scheduled days in that period, or tracking has not started.</dd>
+        </dl>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" class="add" id="infoClose">Close</button>
+      </div>
+    </div>
+  </dialog>
 
   <dialog id="habitDialog" class="dialog" aria-labelledby="dialogTitle">
     <form id="dialogForm" class="dialog-box">
@@ -114,12 +155,57 @@
         <input id="dialogName" maxlength="30" autocomplete="off" />
       </label>
       <label id="dialogGoalWrap" class="dialog-name" for="dialogGoal">
-        How often
+        Frequency
         <select id="dialogGoal"></select>
       </label>
+      <fieldset id="dialogDaysWrap" class="day-wrap">
+        <legend>Days to Select</legend>
+        <div id="dialogDays" class="day-picker"></div>
+        <p id="dialogHint" class="day-hint" aria-live="polite"></p>
+      </fieldset>
       <div class="dialog-actions">
         <button type="button" class="rename-btn" id="dialogCancel">Cancel</button>
         <button type="submit" class="add" id="dialogOk">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="addDialog" class="dialog" aria-labelledby="addTitle">
+    <form id="addForm" class="dialog-box">
+      <h2 id="addTitle">Add a Habit</h2>
+      <label class="dialog-name" for="addName">
+        Name Habit (max 30 characters)
+        <input id="addName" maxlength="30" autocomplete="off" placeholder="e.g. Workout" required />
+      </label>
+      <label class="dialog-name" for="addFreq">
+        Frequency
+        <select id="addFreq"></select>
+      </label>
+      <fieldset class="day-wrap">
+        <legend>Days to Select</legend>
+        <div id="addDays" class="day-picker"></div>
+        <p id="addHint" class="day-hint" aria-live="polite"></p>
+      </fieldset>
+      <div class="dialog-actions">
+        <button type="button" class="rename-btn" id="addCancel">Cancel</button>
+        <button type="submit" class="add">Add Habit</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="trackDialog" class="dialog" aria-labelledby="trackTitle">
+    <form id="trackForm" class="dialog-box">
+      <h2 id="trackTitle">Set your tracking day</h2>
+      <p class="dialog-note">Pick the day you want to start tracking from. Boxes before it are locked and every chart counts from it, for every habit, including ones you add later.</p>
+      <label class="dialog-name" for="trackInput">
+        Tracking starts on
+        <input type="date" id="trackInput" required />
+      </label>
+      <div class="dialog-actions">
+        <button type="button" class="rename-btn" id="trackClear" hidden>Clear</button>
+        <button type="button" class="rename-btn" id="trackToday">Today</button>
+        <button type="button" class="rename-btn" id="trackCancel">Cancel</button>
+        <button type="submit" class="add">Save</button>
       </div>
     </form>
   </dialog>
